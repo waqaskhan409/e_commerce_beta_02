@@ -3,6 +3,8 @@ import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 class RegisterationStless extends StatelessWidget {
@@ -43,6 +45,10 @@ class _RegistrationState extends State<Registration> {
 
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth auth = FirebaseAuth.instance;
+  FacebookLogin facebookLogin = new FacebookLogin();
+
+
+
   ProgressDialog pr;
   final db = Firestore.instance;
 
@@ -180,14 +186,7 @@ class _RegistrationState extends State<Registration> {
                           onPressed: () {
                             if (_formKey.currentState.validate()) {
                               pr.show();
-                              Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => Home(
-                                      title: "Login page",
-                                    ),
-                                  ),
-                                  (e) => false);
+                              handleSignUp(emailController.text, passwordController.text);
                             } else {
                               _scaffoldKey.currentState.showSnackBar(SnackBar(
                                   content: Text('Some thing went wrong')));
@@ -206,20 +205,30 @@ class _RegistrationState extends State<Registration> {
                   ),
                   Row(
                     children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.fromLTRB(25.0, 15.0, 0.0, 0.0),
-                        child: Image.asset(
-                          "assets/images/google.png",
-                          width: 60.0,
-                          height: 60.0,
+                      GestureDetector(
+                        onTap: (){
+                          googleSignIn();
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(25.0, 15.0, 0.0, 0.0),
+                          child: Image.asset(
+                            "assets/images/google.png",
+                            width: 60.0,
+                            height: 60.0,
+                          ),
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(5.0, 15.0, 0.0, 0.0),
-                        child: Image.asset(
-                          "assets/images/facebook.png",
-                          width: 60.0,
-                          height: 60.0,
+                      GestureDetector(
+                        onTap: (){
+                          facebookSignIn();
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(5.0, 15.0, 0.0, 0.0),
+                          child: Image.asset(
+                            "assets/images/facebook.png",
+                            width: 60.0,
+                            height: 60.0,
+                          ),
                         ),
                       )
                     ],
@@ -266,13 +275,95 @@ class _RegistrationState extends State<Registration> {
   }
 
   Future<FirebaseUser> handleSignUp(email, password) async {
-    AuthResult result = await auth.createUserWithEmailAndPassword(
-        email: email, password: password);
-    final FirebaseUser user = result.user;
 
-    assert(user != null);
-    assert(await user.getIdToken() != null);
+    try {
+      AuthResult result = await auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      final FirebaseUser user = result.user;
 
-    return user;
+      assert(user != null);
+      assert(await user.getIdToken() != null);
+      pr.dismiss();
+      Navigator.push(
+          context,
+          new MaterialPageRoute(
+            builder: (_) => Home(
+              title: "Home page",
+            ),
+          ));
+      return user;
+
+    }catch(e){
+      pr.dismiss();
+      _scaffoldKey.currentState.showSnackBar(SnackBar(
+          content: Text('Something went wrong')));
+
+      return null;
+    }
+
   }
+  Future<void> facebookSignIn() async {
+    try {
+      final FacebookLoginResult facebookLoginResult = await facebookLogin.logIn(
+          ['email', 'public_profile']);
+      FacebookAccessToken facebookAccessToken = facebookLoginResult.accessToken;
+      AuthCredential authCredential = FacebookAuthProvider.getCredential(
+          accessToken: facebookAccessToken.token);
+      FirebaseUser fbUser;
+      fbUser = (await auth.signInWithCredential(authCredential)).user;
+      assert(fbUser != null);
+      assert(await fbUser.getIdToken() != null);
+
+      final FirebaseUser currentUser = await auth.currentUser();
+      assert(fbUser.uid == currentUser.uid);
+      print('signInEmail succeeded: ' + currentUser.uid);
+      Navigator.push(
+          context,
+          new MaterialPageRoute(
+            builder: (_) => Home(
+              title: "Home page",
+            ),
+          ));
+      return;
+    }catch(e){
+      print(e);
+      return;
+    }
+
+  }Future<void> googleSignIn() async {
+    try {
+      GoogleSignInAccount googleSignInAccount = await _handleGoogleSignIn();
+      final googleAuth = await googleSignInAccount.authentication;
+      final googleAuthCred = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+      FirebaseUser gUser;
+      gUser = (await auth.signInWithCredential(googleAuthCred)).user;
+      assert(gUser != null);
+      assert(await gUser.getIdToken() != null);
+
+      final FirebaseUser currentUser = await auth.currentUser();
+      assert(gUser.uid == currentUser.uid);
+      print('signInEmail succeeded: ' + currentUser.uid);
+      Navigator.push(
+          context,
+          new MaterialPageRoute(
+            builder: (_) => Home(
+              title: "Home page",
+            ),
+          ));
+      return;
+    }catch(e){
+      print(e);
+      return;
+    }
+
+  }
+  Future<GoogleSignInAccount> _handleGoogleSignIn() async {
+    GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email']);
+    GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    return googleSignInAccount;
+  }
+
+
 }

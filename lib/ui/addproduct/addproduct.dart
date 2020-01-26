@@ -7,6 +7,7 @@ import 'package:e_commerce_beta/model/categoriesmodel.dart';
 import 'package:e_commerce_beta/ui/addproduct/succesfullyaddproduct.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/registeration/registration.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -33,6 +34,7 @@ class _AddProductState extends State<AddProductItem>
   final priceController = TextEditingController();
   final isPriceNegotiableController = TextEditingController();
   final cityController = TextEditingController();
+  final quantityController = TextEditingController();
   ProgressDialog pr;
 
 //  final Controller = TextEditingController();
@@ -40,7 +42,7 @@ class _AddProductState extends State<AddProductItem>
 
   final db = Firestore.instance;
 
-
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   final _formKey = GlobalKey<FormState>();
   List<CategoriesModel> list = new List();
@@ -60,6 +62,7 @@ class _AddProductState extends State<AddProductItem>
   ImagePickerHandler imagePicker;
   String printValue = "";
   IconData icon = Icons.camera;
+  String uid ;
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -77,7 +80,12 @@ class _AddProductState extends State<AddProductItem>
     imagePicker = new ImagePickerHandler(this, _controller);
     imagePicker.init();
   }
+  void inputData() async {
+    final FirebaseUser user = await auth.currentUser();
+    uid = user.uid;
 
+    // here you write the codes to input the data into firestore
+  }
   @override
   Widget build(BuildContext context) {
     list.clear();
@@ -392,6 +400,7 @@ class _AddProductState extends State<AddProductItem>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
+
                 Container(
                   margin: EdgeInsets.fromLTRB(35.0, 40.0, 0.0, 10.0),
                   child: Text(
@@ -452,6 +461,36 @@ class _AddProductState extends State<AddProductItem>
                     ),
                     decoration:
                         new InputDecoration.collapsed(hintText: 'Yes or No'),
+                  ),
+                )
+                ,Container(
+                  margin: EdgeInsets.fromLTRB(35.0, 40.0, 0.0, 10.0),
+                  child: Text(
+                    "Quantity",
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(30.0, 5.0, 30.0, 10.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 3.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
+                  child: TextFormField(
+                    controller: quantityController,
+                    validator: (text){
+                      if(text.isEmpty){
+                        return "Please put the Quantity of product";
+                      }
+                      return null;
+                    },
+                    keyboardType: TextInputType.numberWithOptions(),
+                    style: TextStyle(
+                      fontSize: 20.0,
+                    ),
+                    decoration:
+                    new InputDecoration.collapsed(hintText: 'Price'),
                   ),
                 ),
                 Container(
@@ -673,7 +712,7 @@ class _AddProductState extends State<AddProductItem>
                         ),
                         child: FlatButton(
                             onPressed: () async {
-                              String ownerS, ownerNumerS, productNameS, productCategoryS, shortDesS, longDesS, priceS, isNegotiableS, cityS;
+                              String ownerS, ownerNumerS, productNameS, productCategoryS, quantityS, shortDesS, longDesS, priceS, isNegotiableS, cityS;
 
 
                               if (_formKey.currentState.validate()) {
@@ -688,6 +727,7 @@ class _AddProductState extends State<AddProductItem>
                                    shortDesS = shorDesController.text;
                                    longDesS = longDesController.text;
                                    priceS = priceController.text;
+                                   quantityS = quantityController.text;
                                    isNegotiableS = isPriceNegotiableController.text;
                                    cityS = cityController.text;
                                    Map<String, Object> product = new HashMap();
@@ -698,11 +738,13 @@ class _AddProductState extends State<AddProductItem>
                                    product['shot_desc'] = shortDesS;
                                    product['long_desc'] = longDesS;
                                    product['price'] = priceS;
+                                   product['quantity'] = quantityS;
                                    product['is_negotiable'] = isNegotiableS;
                                    product['city'] = cityS;
                                    product['province'] = province;
                                    product['is_feature'] = isFeature;
                                    product['expire_date'] = dateString;
+                                   product['uid'] = uid;
                                    product['current_date'] = DateTime.now();
                                    product['image_1'] = "image";
                                    product['image_2'] = "image";
@@ -1210,6 +1252,7 @@ class _AddProductState extends State<AddProductItem>
                   MaterialPageRoute(
                     builder: (_) => Home(
                       title: "Home page",
+                      filter: "All",
                     ),
                   ),
                   (e) => false);
@@ -1357,16 +1400,22 @@ class _AddProductState extends State<AddProductItem>
     String imge = await (await uploadTask.onComplete).ref.getDownloadURL();
     if(index == 0 ){
       Map<String, Object> imagesMap = new HashMap();
-      imagesMap["image_1"] = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      imagesMap["image_1"] = imageUrl;
+      imagesMap["thumbnailmm"] = imageUrl;
       Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
     }else if(index  == 1){
       Map<String, Object> imagesMap = new HashMap();
-      imagesMap["image_2"] = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      imagesMap["image_2"] = imageUrl;
+      imagesMap["thumbnail"] = imageUrl;
       Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
 
     }else if(index == 2){
       Map<String, Object> imagesMap = new HashMap();
-      imagesMap["image_3"] = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      imagesMap["image_1"] = imageUrl;
+      imagesMap["thumbnail"] = imageUrl;
       Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
 
     }

@@ -1,9 +1,15 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce_beta/model/productmodel.dart';
 import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
+import 'package:e_commerce_beta/ui/order/order.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Homeless extends StatelessWidget {
   @override
@@ -40,6 +46,14 @@ class Cart extends StatefulWidget {
 class _CartState extends State<Cart> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   int _current = 0;
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final GlobalKey<FormState> _quanityKey = GlobalKey();
+  String email = "example@gmail.com";
+  final Firestore db = Firestore.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Product> cart = new List();
+  String uid;
+
   int _totalMoney = 0;
 
   final List<String> list = <String>[
@@ -56,6 +70,8 @@ class _CartState extends State<Cart> {
     "Beta AR Jacket Men's",
     "BIKE JACKET PRIME GTX ACTIVE (Ms), 100% water- and windproof, particularly breathable."
   ];
+  static final  validCharacters = RegExp(r'^[0-9]+$');
+
   final List<String> price = <String>[
     "10000",
     "20000",
@@ -77,22 +93,35 @@ class _CartState extends State<Cart> {
   final List<int> colorCodes = <int>[600, 500, 500, 500, 200, 300];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    inputData();
+    gettingCartList();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    totalMoney();
     return Stack(children: <Widget>[
       Image.asset(
         "assets/images/home.png",
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
         fit: BoxFit.cover,
       ),
       Scaffold(
-        key: _drawerKey,
+        key: _scaffoldKey,
         backgroundColor: Colors.transparent,
         drawerEdgeDragWidth: 0,
         drawer: returnDrawer(),
         body: Container(
-          margin: EdgeInsets.fromLTRB(0.0, 35.0, 0.0, 0.0),
+          margin: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
           decoration: BoxDecoration(),
           child: Column(
             children: <Widget>[
@@ -102,12 +131,14 @@ class _CartState extends State<Cart> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
-                        onTap: () {
-                          _drawerKey.currentState.openDrawer();
-                        },
                         child: Container(
                           margin: EdgeInsets.fromLTRB(30.0, 40.0, 0.0, 0.0),
-                          child: Image.asset("assets/images/drawerlines.png"),
+                          child: IconButton(
+                            onPressed: (){
+                              _scaffoldKey.currentState.openDrawer();
+                            },
+                            icon: Icon(Icons.dehaze, color: Colors.white, size: 30.0,),
+                          ),
                         ),
                       ),
                       Container(
@@ -119,19 +150,21 @@ class _CartState extends State<Cart> {
                       ),
                       Spacer(),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              new MaterialPageRoute(
-                                builder: (_) => Home(
-                                  title: "Home page",
-                                ),
-                              ));
-                        },
                         child: Container(
                           margin: EdgeInsets.fromLTRB(0.0, 45.0, 30.0, 0.0),
-                          child: Icon(
-                            Icons.home,
+                          child: IconButton(
+                            onPressed: (){
+                              Navigator.push(
+                                  context,
+                                  new MaterialPageRoute(
+                                    builder: (_) =>
+                                        Home(
+                                          title: "Home page",
+                                          filter: "All",
+                                        ),
+                                  ));
+                            },
+                            icon: Icon(Icons.home, color: Colors.white,),
                             color: Colors.white,
                           ),
                         ),
@@ -176,9 +209,9 @@ class _CartState extends State<Cart> {
                   ),
                 ],
               ),
-              Expanded(
+              cart.length != 0 ? Expanded(
                 child: ListView.builder(
-                  itemCount: list.length,
+                  itemCount: cart.length,
                   itemBuilder: (context, i) {
                     print(i);
                     return Container(
@@ -211,8 +244,8 @@ class _CartState extends State<Cart> {
                         },
                         title: Row(
                           children: <Widget>[
-                            Image.asset(
-                              entries[i],
+                            Image.network(
+                              cart[i].thumbnail,
                               width: 50.0,
                               height: 50.0,
                             ),
@@ -224,7 +257,7 @@ class _CartState extends State<Cart> {
                                 strutStyle: StrutStyle(fontSize: 12.0),
                                 text: TextSpan(
                                     style: TextStyle(color: Colors.black),
-                                    text: listText[i]),
+                                    text: cart[i].product),
                               ),
                             ),
                             Container(
@@ -234,14 +267,45 @@ class _CartState extends State<Cart> {
                               decoration: BoxDecoration(
                                 border: Border.all(color: Colors.black12),
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(4)),
+                                BorderRadius.all(Radius.circular(4)),
                               ),
-                              child: TextFormField(
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
+                              child: Form(
+                                child: TextFormField(
+
+                                  onChanged: (text){
+                                    print(text);
+                                    try{
+                                      int count = int.parse(text);
+                                      if(!validCharacters.hasMatch(text)){
+                                        _scaffoldKey.currentState
+                                            .showSnackBar(SnackBar(content: Text("Please type number only")));
+
+                                      }else if(int.parse(cart[i].quantity) < count){
+                                        _scaffoldKey.currentState
+                                            .showSnackBar(SnackBar(content: Text("Not enough quantity")));
+
+                                      }else{
+
+                                        setState(() {
+                                          cart[i].buyQuantity = count;
+                                          totalMoney();
+                                        });
+                                      }
+                                    }catch(e){
+                                      print(e);
+                                      if(!text.isEmpty){
+                                        _scaffoldKey.currentState
+                                            .showSnackBar(SnackBar(content: Text("Please type number only")));
+                                      }
+                                    }
+
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                  initialValue: "1",
                                 ),
-                                initialValue: "1",
                               ),
                             )
                           ],
@@ -252,69 +316,92 @@ class _CartState extends State<Cart> {
                             margin: EdgeInsets.fromLTRB(30.0, 0.0, 0.0, 0.0),
                             child: ListTile(
                               title: Text(
-                                price[i],
+                                cart[i].price,
                                 style: TextStyle(fontSize: 23),
                               ),
                             ),
                           ),
                           Container(
                               child: Row(
-                            children: <Widget>[
-                              Container(
-                                padding:
+                                children: <Widget>[
+                                  Container(
+                                    padding:
                                     EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                                margin:
+                                    margin:
                                     EdgeInsets.fromLTRB(35.0, 0.0, 0.0, 20.0),
-                                decoration: BoxDecoration(
-                                  border:
+                                    decoration: BoxDecoration(
+                                      border:
                                       Border.all(color: Colors.orangeAccent),
-                                  borderRadius:
+                                      borderRadius:
                                       BorderRadius.all(Radius.circular(8)),
-                                ),
-                                child: Row(
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.shopping_cart,
-                                      color: Colors.orangeAccent,
                                     ),
-                                    Container(
-                                        margin: EdgeInsets.fromLTRB(
-                                            0.0, 0.0, 0.0, 0.0),
-                                        child: FlatButton(
-                                          onPressed: () {
-                                            print(_current);
-                                            setState(() {
-                                              list.removeAt(_current);
-                                              entries.removeAt(_current);
-                                              listText.removeAt(_current);
-                                              price.removeAt(_current);
-                                              totalMoney();
-                                            });
-                                          },
-                                          child: Text(
-                                            "Remove from cart",
-                                            style: TextStyle(
-                                                fontSize: 17.0,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w300),
-                                          ),
-                                        ))
-                                  ],
-                                ),
-                              )
-                            ],
-                          )),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.remove_shopping_cart,
+                                          color: Colors.orangeAccent,
+                                        ),
+                                        Container(
+                                            margin: EdgeInsets.fromLTRB(
+                                                0.0, 0.0, 0.0, 0.0),
+                                            child: FlatButton(
+                                              onPressed: () {
+                                                print(_current);
+                                                setState(() {
+
+                                                  removeCart(i);
+
+                                                  cart.removeAt(i);
+
+                                                  totalMoney();
+
+                                                });
+                                              },
+                                              child: Text(
+                                                "Remove from cart",
+                                                style: TextStyle(
+                                                    fontSize: 17.0,
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight
+                                                        .w300),
+                                              ),
+                                            ))
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              )),
                         ],
                       ),
                     );
                   },
+                ),
+              ):Expanded(
+                child: Center(
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(0.0, MediaQuery.of(context).size.height/4, 0.0, 0.0),
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                          child: Icon(FontAwesomeIcons.sadTear, size: 50,color: Colors.red,),
+                        ),
+                        Text("No item Available yet!", style: TextStyle(
+                            color: Colors.black
+                        ))
+                      ],
+                    ),
+                  ),
                 ),
               ),
               Row(
                 children: <Widget>[
                   Container(
                     height: 100,
-                    width: MediaQuery.of(context).size.width,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
                     margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -337,13 +424,14 @@ class _CartState extends State<Cart> {
                         child: Row(
                           children: <Widget>[
                             Container(
-                              padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
+                              padding:
+                              EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
                               margin: EdgeInsets.fromLTRB(30.0, 0.0, 0.0, 20.0),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 border: Border.all(color: Colors.white),
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(4)),
+                                BorderRadius.all(Radius.circular(4)),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black12,
@@ -383,15 +471,15 @@ class _CartState extends State<Cart> {
                             Spacer(),
                             Container(
                               padding:
-                                  EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 0.0),
+                              EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 0.0),
                               margin:
-                                  EdgeInsets.fromLTRB(10.0, 0.0, 30.0, 20.0),
+                              EdgeInsets.fromLTRB(10.0, 0.0, 30.0, 20.0),
                               decoration: BoxDecoration(
                                 color: Color.fromRGBO(218, 36, 46, 40),
                                 border: Border.all(
                                     color: Color.fromRGBO(218, 36, 46, 40)),
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(4)),
+                                BorderRadius.all(Radius.circular(4)),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black12,
@@ -414,7 +502,7 @@ class _CartState extends State<Cart> {
                                       child: FlatButton(
                                         color: Colors.white,
                                         child: Text(
-                                          "Rs. "+ (_totalMoney).toString(),
+                                          "Rs. " + (_totalMoney).toString(),
                                           style: TextStyle(
                                               fontSize: 17.0,
                                               color: Colors.white,
@@ -436,12 +524,11 @@ class _CartState extends State<Cart> {
     ]);
   }
 
-  void totalMoney(){
+  void totalMoney() {
     _totalMoney = 0;
-    for(int i = 0; i< price.length; i++){
-      _totalMoney = _totalMoney + int.parse(price[i]);
+    for (int i = 0; i < cart.length; i++) {
+      _totalMoney = (_totalMoney + int.parse(cart[i].price)) * cart[i].buyQuantity;
     }
-
   }
 
   Widget doubleTap(int index) {
@@ -484,155 +571,251 @@ class _CartState extends State<Cart> {
 
   Drawer returnDrawer() {
     return Drawer(
-      child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            child: Column(
-              children: <Widget>[
-                Image.asset(
-                  "assets/images/Logo.png",
-                  width: 80,
-                  height: 80,
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 20.0),
-                  child: Text("example@gmail.com"),
-                )
-              ],
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Home'),
-              trailing: Icon(
-                Icons.home,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => Home(
-                        title: "My list",
-                      ),
-                    ));
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Compose new product'),
-              trailing: Icon(
-                Icons.new_releases,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => AddProductItem(
-                        title: "Compose new product",
-                      ),
-                    ));
-//                Navigator.pop(context);
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('My items'),
-              trailing: Icon(
-                Icons.list,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => Home(
-                        title: "My list",
-                      ),
-                    ));
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Categories'),
-              trailing: Icon(
-                Icons.category,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => Categories(
-                        title: "Category page",
-                      ),
-                    ));
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Cart'),
-              trailing: Icon(
-                Icons.shopping_cart,
-                color: Colors.red,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Logout'),
-              trailing: Icon(
-                Icons.reply,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => Login(
-                        title: "Login page",
-                      ),
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                  children: <Widget>[
+                    Image.asset(
+                      "assets/images/Logo.png",
+                      width: 80,
+                      height: 80,
                     ),
-                        (e) => false);
-              },
-            ),
+                    Container(
+                      margin: EdgeInsets.only(top: 20.0),
+                      child: Text(email),
+                    )
+                  ],
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Home'),
+                  trailing: Icon(
+                    Icons.home,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              Home(
+                                title: "Home page",
+                                filter: "All",
+                              ),
+                        ));
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Compose new product'),
+                  trailing: Icon(
+                    Icons.new_releases,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              AddProductItem(
+                                title: "Add",
+                              ),
+                        ));
+//                Navigator.pop(context);
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('My Products'),
+                  trailing: Icon(
+                    Icons.list,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              MyProducts(
+                                title: "My products",
+                              ),
+                        ));
+//                Navigator.pop(context);
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('My Orders'),
+                  trailing: Icon(
+                    Icons.bookmark_border,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              Order(
+                                title: "My list",
+                              ),
+                        ));
+//                Navigator.pop(context);
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Categories'),
+                  trailing: Icon(
+                    Icons.category,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              Categories(
+                                title: "Categories",
+                              ),
+                        ));
+//                Navigator.pop(context);
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Cart'),
+                  trailing: Icon(
+                    Icons.shopping_cart,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Logout'),
+                  trailing: Icon(
+                    Icons.reply,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    auth.signOut();
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              Login(
+                                title: "Login page",
+                              ),
+                        ),
+                            (e) => false);
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
+  }
+
+  void inputData() async {
+    final FirebaseUser user = await auth.currentUser();
+    uid = user.uid;
+    if (uid != null) {
+      setState(() {
+        email = user.email;
+      });
+    }
+
+    // here you write the codes to input the data into firestore
+  }
+
+  Future<void> gettingCartList() async {
+    final FirebaseUser user = await auth.currentUser();
+    final uid = user.uid;
+    print(uid);
+    db.collection("cart").where("uid", isEqualTo: uid).getDocuments().then((
+        QuerySnapshot snapshot) {
+      snapshot.documents.forEach((f) {
+        setState(() {
+          cart.add(Product(
+              f.data["owner"],
+              f.data["owner_number"],
+              f.data["prduct_category"],
+              f.data["product"],
+              f.data["price"],
+              f.data["province"],
+              f.data["shot_desc"],
+              f.data["long_desc"],
+              f.data["is_negotiable"],
+              f.data["image_1"],
+              f.data["image_2"],
+              f.documentID,
+              f.data["thumbnail"],
+              f.data["image_3"],
+              f.data["city"],
+              f.data["current_date"],
+              f.data["expire_date"],
+              f.data["is_feature"],
+              f.data["quantity"]
+
+          ));
+        });
+      });
+      for(int i =0; i < cart.length; i++){
+        cart[i].buyQuantity = 1;
+        print(cart[i].buyQuantity);
+      }
+      totalMoney();
+    });
+    print(cart.length);
+
+
+  }
+
+  void removeCart(int i) {
+    db.collection("cart").document(cart[i].product_id).delete();
   }
 }

@@ -5,6 +5,8 @@ import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/registeration/registration.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 class LoginStless extends StatelessWidget {
@@ -44,19 +46,20 @@ class _LoginState extends State<Login> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _formKey = GlobalKey<FormState>();
+
 //  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  FacebookLogin facebookLogin = new FacebookLogin();
 
   ProgressDialog pr;
   final db = Firestore.instance;
 
-
   @override
   void initState() {
     // TODO: implement initState
-    inputData();
+//    inputData();
 
     super.initState();
   }
@@ -65,7 +68,8 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     pr = new ProgressDialog(context);
     pr.style(message: "Signing in ...");
-    pr = new ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
+    pr = new ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
 
     return Stack(
       children: <Widget>[
@@ -194,15 +198,13 @@ class _LoginState extends State<Login> {
                             if (_formKey.currentState.validate()) {
                               pr.show();
 
-                              handleSignInEmail(emailController.text, passwordController.text);
+                              handleSignInEmail(emailController.text,
+                                  passwordController.text);
                               pr.show();
-
                             } else {
                               _scaffoldKey.currentState.showSnackBar(SnackBar(
                                   content: Text('Some thing went wrong')));
                             }
-
-
                           },
                           child: Text(
                             'SIGN IN',
@@ -217,20 +219,30 @@ class _LoginState extends State<Login> {
                   ),
                   Row(
                     children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.fromLTRB(25.0, 15.0, 0.0, 0.0),
-                        child: Image.asset(
-                          "assets/images/google.png",
-                          width: 60.0,
-                          height: 60.0,
+                      GestureDetector(
+                        onTap: (){
+                          googleSignIn();
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(25.0, 15.0, 0.0, 0.0),
+                          child: Image.asset(
+                            "assets/images/google.png",
+                            width: 60.0,
+                            height: 60.0,
+                          ),
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(5.0, 15.0, 0.0, 0.0),
-                        child: Image.asset(
-                          "assets/images/facebook.png",
-                          width: 60.0,
-                          height: 60.0,
+                      GestureDetector(
+                        onTap: (){
+                          facebookSignIn();
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(5.0, 15.0, 0.0, 0.0),
+                          child: Image.asset(
+                            "assets/images/facebook.png",
+                            width: 60.0,
+                            height: 60.0,
+                          ),
                         ),
                       )
                     ],
@@ -277,7 +289,6 @@ class _LoginState extends State<Login> {
   }
 
   Future<FirebaseUser> handleSignInEmail(String email, String password) async {
-
     try {
       AuthResult result = await auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -289,7 +300,6 @@ class _LoginState extends State<Login> {
       final FirebaseUser currentUser = await auth.currentUser();
       assert(user.uid == currentUser.uid);
 
-
       pr.dismiss();
       print('signInEmail succeeded: $user');
       Navigator.push(
@@ -297,35 +307,87 @@ class _LoginState extends State<Login> {
           new MaterialPageRoute(
             builder: (_) => Home(
               title: "Home page",
+              filter: "All",
+
             ),
           ));
       return user;
-    }catch(e){
+    } catch (e) {
       pr.dismiss();
       print(e);
       _scaffoldKey.currentState.showSnackBar(SnackBar(
-          content: Text('Account not found you need to register youself first')));
+          content:
+              Text('Account not found you need to register youself first')));
 
 //      handleError(e);
       return null;
     }
-
   }
-  void inputData() async {
-    final FirebaseUser user = await auth.currentUser();
-    final uid = user.uid;
-    if(uid != null){
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (BuildContext context) => Home(title: "Home page")
-            )
-        );
-      });
+
+  Future<void> facebookSignIn() async {
+    try {
+      final FacebookLoginResult facebookLoginResult = await facebookLogin.logIn(
+          ['email', 'public_profile']);
+      FacebookAccessToken facebookAccessToken = facebookLoginResult.accessToken;
+      AuthCredential authCredential = FacebookAuthProvider.getCredential(
+          accessToken: facebookAccessToken.token);
+      FirebaseUser fbUser;
+      fbUser = (await auth.signInWithCredential(authCredential)).user;
+      assert(fbUser != null);
+      assert(await fbUser.getIdToken() != null);
+
+      final FirebaseUser currentUser = await auth.currentUser();
+      assert(fbUser.uid == currentUser.uid);
+      print('signInEmail succeeded: ' + currentUser.uid);
+      Navigator.push(
+          context,
+          new MaterialPageRoute(
+            builder: (_) => Home(
+              title: "Home page",
+              filter: "All",
+            ),
+          ));
+      return;
+    }catch(e){
+      print(e);
+      return;
     }
 
+  }Future<void> googleSignIn() async {
+    try {
+      GoogleSignInAccount googleSignInAccount = await _handleGoogleSignIn();
+      final googleAuth = await googleSignInAccount.authentication;
+      final googleAuthCred = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+      FirebaseUser gUser;
+      gUser = (await auth.signInWithCredential(googleAuthCred)).user;
+      assert(gUser != null);
+      assert(await gUser.getIdToken() != null);
 
-    // here you write the codes to input the data into firestore
+      final FirebaseUser currentUser = await auth.currentUser();
+      assert(gUser.uid == currentUser.uid);
+      print('signInEmail succeeded: ' + currentUser.uid);
+      Navigator.push(
+          context,
+          new MaterialPageRoute(
+            builder: (_) => Home(
+              title: "Home page",
+              filter: "All",
+            ),
+          ));
+      return;
+    }catch(e){
+      print(e);
+      return;
+    }
+
   }
+  Future<GoogleSignInAccount> _handleGoogleSignIn() async {
+    GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email']);
+    GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    return googleSignInAccount;
+  }
+
+
 }

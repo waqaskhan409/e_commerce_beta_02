@@ -41,5 +41,36 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>fb177316656973324</string>
+      </array>
+      </dict>
+      <dict>
+          <key>CFBundleTypeRole</key>
+          <string>Editor</string>
+          <key>CFBundleURLSchemes</key>
+          <array>
+              <string>com.googleusercontent.apps.73006668541-q8o0v3cgdsa74nc45ej7dklkuul3flg9</string>
+
+          </array>
+      </dict>
+    </array>
+    <key>FacebookAppID</key>
+    <string>177316656973324</string>
+    <key>FacebookDisplayName</key>
+    <string>E-comerce-beta</string>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>fbapi</string>
+      <string>fb-messenger-share-api</string>
+      <string>fbauth2</string>
+      <string>fbshareextension</string>
+    </array>
 </dict>
 </plist>

@@ -3,6 +3,9 @@ import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
 import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
+import 'package:e_commerce_beta/ui/order/order.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Categories extends StatefulWidget {
@@ -15,14 +18,26 @@ class Categories extends StatefulWidget {
 
 class _CategoriesState extends State<Categories> {
   List<CategoriesModel> list = new List();
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  String email = "example@gmail.com";
 
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+  String uid;
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    inputData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     list.clear();
     list.add(new CategoriesModel("assets/images/pets.png", "Pets"));
-    list.add(new CategoriesModel("assets/images/appliances.png", "Home appliances"));
+    list.add(
+        new CategoriesModel("assets/images/appliances.png", "Home appliances"));
     list.add(new CategoriesModel("assets/images/furniture.png", "Furniture"));
     list.add(new CategoriesModel("assets/images/wardrobe.png", "Wardrobe"));
     list.add(new CategoriesModel(
@@ -45,20 +60,23 @@ class _CategoriesState extends State<Categories> {
         drawer: returnDrawer(),
         drawerEdgeDragWidth: 0,
         body: Container(
-            margin: EdgeInsets.fromLTRB(0.0, 35.0, 0.0, 0.0),
+            margin: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
             decoration: BoxDecoration(),
-            child: Column(children: <Widget>[
+            child: SingleChildScrollView(
+              child: Column(children: <Widget>[
               Column(children: <Widget>[
                 Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
-                        onTap: () {
-                          _drawerKey.currentState.openDrawer();
-                        },
                         child: Container(
                           margin: EdgeInsets.fromLTRB(30.0, 40.0, 0.0, 0.0),
-                          child: Image.asset("assets/images/drawerlines.png"),
+                          child:IconButton(
+                            onPressed: (){
+                              _drawerKey.currentState.openDrawer();
+                            },
+                            icon: Icon(Icons.dehaze, color: Colors.white, size: 30.0,),
+                          ),
                         ),
                       ),
                       Container(
@@ -76,54 +94,69 @@ class _CategoriesState extends State<Categories> {
                   child: ListView.builder(
                     itemCount: list.length,
                     itemBuilder: (context, i) {
-                      return Container(
-                        height: 60.0,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 5.0,
-                              // has the effect of softening the shadow
-                              spreadRadius: 3.0,
-                              // has the effect of extending the shadow
-                              offset: Offset(
-                                2.0, // horizontal, move right 10
-                                2.0, // vertical, move down 10
+                      return GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                              context,
+                              new MaterialPageRoute(
+                                builder: (_) => Home(
+                                  title: "Home page",
+                                  filter: list[i].name,
+                                ),
+                              ));
+                        },
+                        child: Container(
+                          height: 60.0,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 5.0,
+                                // has the effect of softening the shadow
+                                spreadRadius: 3.0,
+                                // has the effect of extending the shadow
+                                offset: Offset(
+                                  2.0, // horizontal, move right 10
+                                  2.0, // vertical, move down 10
+                                ),
                               ),
-                            ),
-                          ],
-                          border: Border.all(color: Colors.white),
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                        ),
-                        margin: EdgeInsets.fromLTRB(10.0, 3.0, 10.0, 8.0),
-                        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        child: Row(
-                          children: <Widget>[
-                            Image.asset(list[i].images),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                              child: Text(
-                                list[i].name,
-                                style: TextStyle(fontSize: 16.0),
-                              ),
-                            )
-                          ],
+                            ],
+                            border: Border.all(color: Colors.white),
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          margin: EdgeInsets.fromLTRB(10.0, 3.0, 10.0, 8.0),
+                          padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                          child: Row(
+                            children: <Widget>[
+                              Image.asset(list[i].images),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                                child: Text(
+                                  list[i].name,
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
                 )
               ]),
-            ])),
+            ]))),
       )
     ]);
   }
 
   Drawer returnDrawer() {
     return Drawer(
+        child: Container(
+      color: Colors.white,
       child: ListView(
         // Important: Remove any padding from the ListView.
+
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
@@ -136,7 +169,7 @@ class _CategoriesState extends State<Categories> {
                 ),
                 Container(
                   margin: EdgeInsets.only(top: 20.0),
-                  child: Text("example@gmail.com"),
+                  child: Text(email),
                 )
               ],
             ),
@@ -156,13 +189,19 @@ class _CategoriesState extends State<Categories> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => Home(title: "Home page",),
-                ));
+                // Then close the drawer
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => Home(
+                        title: "Home page",
+                        filter: "All",
+                      ),
+                    ));
               },
             ),
           ),
-          Container(
+          /*Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Compose new product'),
@@ -174,17 +213,21 @@ class _CategoriesState extends State<Categories> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => AddProductItem(title: "Compose new product",),
-                ));
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => AddProductItem(
+                        title: "Add",
+                      ),
+                    ));
 //                Navigator.pop(context);
-
               },
             ),
-          ),Container(
+          ),*/
+          Container(
             color: Colors.white,
             child: ListTile(
-              title: Text('My items'),
+              title: Text('My Products'),
               trailing: Icon(
                 Icons.list,
                 color: Colors.red,
@@ -193,14 +236,41 @@ class _CategoriesState extends State<Categories> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => Home(title: "My list",),
-                ));
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => MyProducts(
+                        title: "My Products",
+                      ),
+                    ));
 //                Navigator.pop(context);
-
               },
             ),
           ),
+          /*Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('My Orders'),
+              trailing: Icon(
+                Icons.bookmark_border,
+                color: Colors.red,
+              ),
+              onTap: () {
+                // Update the state of the app
+                // ...
+                // Then close the drawer
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) =>
+                          Order(
+                            title: "My list",
+                          ),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
+          ),*/
           Container(
             color: Colors.white,
             child: ListTile(
@@ -215,26 +285,30 @@ class _CategoriesState extends State<Categories> {
                 // Then close the drawer
                 Navigator.pop(context);
 
-              },
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Cart'),
-              trailing: Icon(
-                Icons.shopping_cart,
-                color: Colors.red,
-              ),
-              onTap: () {
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => Cart(title: "Cart page",),
-                ));
 //                Navigator.pop(context);
-
               },
             ),
           ),
+//          Container(
+//            color: Colors.white,
+//            child: ListTile(
+//              title: Text('Cart'),
+//              trailing: Icon(
+//                Icons.shopping_cart,
+//                color: Colors.red,
+//              ),
+//              onTap: () {
+//                Navigator.push(
+//                    context,
+//                    new MaterialPageRoute(
+//                      builder: (_) => Cart(
+//                        title: "Cart page",
+//                      ),
+//                    ));
+////                Navigator.pop(context);
+//              },
+//            ),
+//          ),
           Container(
             color: Colors.white,
             child: ListTile(
@@ -247,6 +321,7 @@ class _CategoriesState extends State<Categories> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
+                auth.signOut();
                 Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
@@ -254,13 +329,24 @@ class _CategoriesState extends State<Categories> {
                         title: "Login page",
                       ),
                     ),
-                        (e) => false);
+                    (e) => false);
               },
             ),
           ),
-
         ],
       ),
-    );
+    ));
+  }
+
+  void inputData() async {
+    final FirebaseUser user = await auth.currentUser();
+    uid = user.uid;
+    if (uid != null) {
+      setState(() {
+        email = user.email;
+      });
+    }
+
+    // here you write the codes to input the data into firestore
   }
 }

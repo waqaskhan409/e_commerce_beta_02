@@ -1,12 +1,21 @@
+import 'dart:collection';
+import 'dart:math';
+
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce_beta/model/productmodel.dart';
 import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
 import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
+import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Homeless extends StatelessWidget {
   @override
@@ -32,9 +41,10 @@ class Homeless extends StatelessWidget {
 }
 
 class Home extends StatefulWidget {
-  Home({Key key, this.title}) : super(key: key);
+  Home({Key key, this.title, this.filter}) : super(key: key);
 
   String title;
+  String filter;
 
   @override
   _HomeState createState() => _HomeState();
@@ -43,6 +53,15 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   final FirebaseAuth auth = FirebaseAuth.instance;
+  final Firestore db = Firestore.instance;
+
+  String email = "example@gmail.com";
+  List<Product> productList = new List();
+  List<Product> cart = new List();
+  List<Product> prevList = new List();
+  IconData iconList = Icons.list;
+
+
 
 
   final List<String> list = <String>[
@@ -72,8 +91,18 @@ class _HomeState extends State<Home> {
   String swiptDouble = "Swipe for details";
   int listGrid = 0;
   final List<int> colorCodes = <int>[600, 500, 500, 500, 200, 300];
+  String uid;
+  double _value = 0.0;
 
-    double _value = 0.0;
+  @override
+  Future<void> initState()  {
+    // TODO: implement initState
+
+    inputData();
+    readDataFromFireStore();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,12 +114,25 @@ class _HomeState extends State<Home> {
         fit: BoxFit.cover,
       ),
       Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: (){
+            Navigator.push(
+                context,
+                new MaterialPageRoute(
+                  builder: (_) => AddProductItem(
+                    title: "Add",
+                  ),
+                ));
+          },
+          backgroundColor: Colors.red,
+          child: Icon(Icons.add),
+        ),
         key: _drawerKey,
         drawer: returnDrawer(),
         drawerEdgeDragWidth: 0,
         backgroundColor: Colors.transparent,
         body: Container(
-          margin: EdgeInsets.fromLTRB(0.0, 35.0, 0.0, 0.0),
+          margin: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
           decoration: BoxDecoration(),
           child: Column(
             children: <Widget>[
@@ -100,12 +142,15 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
-                        onTap: () {
-                          _drawerKey.currentState.openDrawer();
-                        },
+
                         child: Container(
                           margin: EdgeInsets.fromLTRB(30.0, 40.0, 0.0, 0.0),
-                          child: Image.asset("assets/images/drawerlines.png"),
+                          child: IconButton(
+                            onPressed: (){
+                              _drawerKey.currentState.openDrawer();
+                            },
+                            icon: Icon(Icons.dehaze, color: Colors.white, size: 30.0,),
+                          ),
                         ),
                       ),
                       Container(
@@ -116,22 +161,28 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Spacer(),
-                      GestureDetector(
-                        onTap: (){
-                          Navigator.push(context, new MaterialPageRoute(
-                            builder: (_) => Cart(title: "Cart page",),
-                          ));
-                        },
+                      /*GestureDetector(
                         child: Container(
-                          margin: EdgeInsets.fromLTRB(200.0, 45.0, 30.0, 0.0),
-                          child: Image.asset("assets/images/cart.png"),
+                          margin: EdgeInsets.fromLTRB(0.0, 45.0, 30.0, 0.0),
+                          child: IconButton(
+                            onPressed: (){
+                              Navigator.push(
+                                  context,
+                                  new MaterialPageRoute(
+                                    builder: (_) => Cart(
+                                      title: "Cart page",
+                                    ),
+                                  ));
+                            },
+                            icon: Icon(Icons.shopping_cart, color: Colors.white,),
+                          ),
                         ),
-                      )
+                      )*/
                     ],
                   ),
                   Container(
                     child: Container(
-                      margin: EdgeInsets.fromLTRB(30.0, 70.0, 30.0, 10.0),
+                      margin: EdgeInsets.fromLTRB(30.0, 50.0, 30.0, 10.0),
                       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -139,6 +190,9 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                       child: TextFormField(
+                        onChanged: (text){
+                          searchProducts(text);
+                        },
                         style: TextStyle(
                           fontSize: 20.0,
                         ),
@@ -146,6 +200,7 @@ class _HomeState extends State<Home> {
                           hintText: 'Find a product',
                           border: InputBorder.none,
                           suffix: Image.asset("assets/images/search.png"),
+                          icon: Icon(Icons.search)
                         ),
                       ),
                     ),
@@ -153,13 +208,13 @@ class _HomeState extends State<Home> {
                   Row(
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.fromLTRB(30.0, 10.0, 0.0, 0.0),
+                        margin: EdgeInsets.fromLTRB(30.0, 0.0, 0.0, 10.0),
                         child: Image.asset("assets/images/doubleclick.png"),
                       ),
                       Container(
-                        margin: EdgeInsets.fromLTRB(10.0, 15.0, 0.0, 0.0),
+                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 10.0),
                         child: Text(
-                          swiptDouble,
+                          widget.filter,
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -167,224 +222,308 @@ class _HomeState extends State<Home> {
                       GestureDetector(
                         onTap: () => {changeToList()},
                         child: Container(
-                          margin: EdgeInsets.fromLTRB(0.0, 15.0, 40.0, 0.0),
-                          child: Image.asset(image),
+                          margin: EdgeInsets.fromLTRB(0.0, 0.0, 30.0, 10.0),
+                          child: IconButton(
+                            onPressed: (){
+                              setState(() {
+                                if(iconList == Icons.list){
+                                  iconList = Icons.grid_on;
+                                }else{
+                                  iconList = Icons.list;
+                                }
+                              });
+                            },
+                            icon: Icon(iconList, color: Colors.white,),
+                          ),
                         ),
                       )
                     ],
                   ),
                 ],
               ),
+              productList.length != 0 ?
               Expanded(
-                child: image == "assets/images/list.png"
+                child: iconList == Icons.list
                     ? GridView.count(
                         shrinkWrap: true,
                         crossAxisCount: 2,
-                        children: List.generate(list.length, (index) {
+                        children: List.generate(productList.length, (index) {
                           return GestureDetector(
                               onDoubleTap: () => {doubleTap(index)},
-                              child:  Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black12,
-                                              blurRadius: 5.0,
-                                              // has the effect of softening the shadow
-                                              spreadRadius: 3.0,
-                                              // has the effect of extending the shadow
-                                              offset: Offset(
-                                                2.0, // horizontal, move right 10
-                                                2.0, // vertical, move down 10
-                                              ),
-                                            ),
-                                          ],
-                                          border: Border.all(color: Colors.white),
-                                          borderRadius:
-                                          BorderRadius.all(Radius.circular(4)),
+                              child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 5.0,
+                                        // has the effect of softening the shadow
+                                        spreadRadius: 3.0,
+                                        // has the effect of extending the shadow
+                                        offset: Offset(
+                                          2.0, // horizontal, move right 10
+                                          2.0, // vertical, move down 10
                                         ),
-                                        margin:
-                                        EdgeInsets.fromLTRB(7.0, 8.0, 7.0, 8.0),
-                                        child: CarouselSlider.builder(
-                                          enlargeCenterPage: true,
-                                            aspectRatio: 3/2,
-                                            viewportFraction: 1.0,
-                                          itemCount: 2,
-                                          itemBuilder: (BuildContext context, int itemIndex) =>
-                                          itemIndex == 0 ? GestureDetector(
-                                            onTap:(){
-                                              Navigator.push(context, new MaterialPageRoute(
-                                                builder: (_) => ProductDetail(title: "Product Detail page",),
-                                              ));
-                                            },
-                                            child: Container(
-                                              child: Image.asset(
-                                                entries[index],
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                              ),
-                                            ),
-                                          ): GestureDetector(
-                                            onTap: (){
-                                              Navigator.push(context, new MaterialPageRoute(
-                                                builder: (_) => ProductDetail(title: "Product Detail page",),
-                                              ));
-                                            },
-                                            child: Container(
-                                              margin: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Text("iPhone 11", style: TextStyle(
-                                                      fontSize: 17
-                                                  ),),
-                                                  Text("Rs. 100,000", style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight: FontWeight.w500
-                                                  ),),
-                                                  Container(
-                                                    padding: EdgeInsets.fromLTRB(
-                                                        10.0, .0, 0.0, 0.0),
-                                                    margin: EdgeInsets.fromLTRB(
-                                                        20.0, 60.0, 25.0, 0.0),
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.orangeAccent
-                                                      ),
-                                                      borderRadius: BorderRadius.all(
-                                                          Radius.circular(8)),
+                                      ),
+                                    ],
+                                    border: Border.all(color: Colors.white),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(4)),
+                                  ),
+                                  margin:
+                                      EdgeInsets.fromLTRB(7.0, 5.0, 7.0, 8.0),
+                                  child: CarouselSlider.builder(
+                                      enlargeCenterPage: true,
+                                      aspectRatio: 3 / 2,
+                                      viewportFraction: 1.0,
+                                      itemCount: 2,
+                                      itemBuilder: (BuildContext context,
+                                              int itemIndex) =>
+                                          itemIndex == 0
+                                              ? GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        new MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              ProductDetail(
+                                                            title:
+                                                                "Product Detail page",
+                                                                productDetail: productList[index],
+                                                          ),
+                                                        ));
+                                                  },
+                                                  child: Container(
+                                                    child: Image.network(
+                                                      productList[index].thumbnail,
+                                                      width: 180,
+                                                      height: 180,
                                                     ),
-                                                    child: Row(
+                                                  ),
+                                                )
+                                              : GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        new MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              ProductDetail(
+                                                            title:
+                                                                "Product Detail page",
+                                                          ),
+                                                        ));
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.fromLTRB(
+                                                        0.0, 20.0, 0.0, 0.0),
+                                                    child: Column(
                                                       children: <Widget>[
-                                                        Icon(
-                                                          Icons.shopping_cart,
-                                                          color: Colors.orangeAccent,
+                                                        Text(
+                                                          productList[index].product,
+                                                          style: TextStyle(
+                                                              fontSize: 17),
+                                                        ),
+                                                        Text(
+                                                          "Rs. " + productList[index].price,
+                                                          style: TextStyle(
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500),
                                                         ),
                                                         Container(
-                                                            margin: EdgeInsets.fromLTRB(
-                                                                0.0, 0.0, 0.0, 0.0),
-                                                            child: FlatButton(
-                                                              onPressed: (){
-
-                                                              },
-                                                              child: Text(
-                                                                "Add to cart",
-                                                                style: TextStyle(
-                                                                    fontSize: 15.0,
-                                                                    color: Colors.black,
-                                                                    fontWeight:
-                                                                    FontWeight.w300),
+                                                          padding: EdgeInsets
+                                                              .fromLTRB(10.0,
+                                                                  .0, 0.0, 0.0),
+                                                          margin: EdgeInsets
+                                                              .fromLTRB(
+                                                                  20.0,
+                                                                  20.0,
+                                                                  25.0,
+                                                                  0.0),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            border: Border.all(
+                                                                color: Colors
+                                                                    .blue),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            8)),
+                                                          ),
+                                                          child: Row(
+                                                            children: <Widget>[
+                                                              Icon(
+                                                                Icons
+                                                                    .call,
+                                                                color: Colors
+                                                                    .blue,
                                                               ),
-                                                            ))
+                                                              Container(
+                                                                  margin: EdgeInsets
+                                                                      .fromLTRB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  child:
+                                                                      FlatButton(
+                                                                    onPressed:
+                                                                        () {
+//                                                                      cart.add(productList[index]);
+//                                                                      sendDataToCart(productList[index]);
+//                                                                        print(checkDuplication().length);
+
+                                                                          launch("tel:"+ productList[index].owner_number);
+
+                                                                        },
+                                                                    child: Text(
+                                                                      "Call him",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              15.0,
+                                                                          color: Colors
+                                                                              .black,
+                                                                          fontWeight:
+                                                                              FontWeight.w300),
+                                                                    ),
+                                                                  ))
+                                                            ],
+                                                          ),
+                                                        )
                                                       ],
                                                     ),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ))
-                                ));
+                                                  ),
+                                                ))));
                         }))
                     : ListView.builder(
-                        itemCount: list.length,
+                        itemCount: productList.length,
                         itemBuilder: (context, i) {
                           return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 5.0,
-                                  // has the effect of softening the shadow
-                                  spreadRadius: 3.0,
-                                  // has the effect of extending the shadow
-                                  offset: Offset(
-                                    2.0, // horizontal, move right 10
-                                    2.0, // vertical, move down 10
-                                  ),
-                                ),
-                              ],
-                              border: Border.all(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                            ),
-                            margin: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 8.0),
-                            padding: EdgeInsets.fromLTRB(20.0, 8.0, 5.0, 8.0),
-                            child: GestureDetector(
-                              onDoubleTap: (){
-                                Navigator.push(context, new MaterialPageRoute(
-                                  builder: (_) => ProductDetail(title: "Product Detail page",),
-                                ));
-                              },
-                              child: ExpansionTile(
-                                title: Row(
-                                  children: <Widget>[
-                                    Image.asset(list[i]),
-                                    Container(
-                                      width: 190.0,
-                                      margin: EdgeInsets.fromLTRB(
-                                          30.0, 0.0, 0.0, 0.0),
-                                      child: Text(
-                                        listText[i],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                children: <Widget>[
-                                  Container(
-                                    decoration: BoxDecoration(),
-                                    margin:
-                                    EdgeInsets.fromLTRB(30.0, 0.0, 0.0, 0.0),
-                                    child: ListTile(
-                                      title: Text(
-                                        "Rs. 10,0000",
-                                        style: TextStyle(fontSize: 23),
-                                      ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 5.0,
+                                    // has the effect of softening the shadow
+                                    spreadRadius: 3.0,
+                                    // has the effect of extending the shadow
+                                    offset: Offset(
+                                      2.0, // horizontal, move right 10
+                                      2.0, // vertical, move down 10
                                     ),
                                   ),
-                                  Container(
-                                      child: Row(
-                                        children: <Widget>[
-                                          Container(
-                                            padding: EdgeInsets.fromLTRB(
-                                                15.0, 0.0, 0.0, 0.0),
-                                            margin: EdgeInsets.fromLTRB(
-                                                35.0, 0.0, 0.0, 20.0),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.orangeAccent),
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(8)),
-                                            ),
-                                            child: Row(
-                                              children: <Widget>[
-                                                Icon(
-                                                  Icons.shopping_cart,
-                                                  color: Colors.orangeAccent,
-                                                ),
-                                                Container(
-                                                    margin: EdgeInsets.fromLTRB(
-                                                        0.0, 0.0, 0.0, 0.0),
-                                                    child: FlatButton(
-                                                      child: Text(
-                                                        "Add to cart",
-                                                        style: TextStyle(
-                                                            fontSize: 17.0,
-                                                            color: Colors.black,
-                                                            fontWeight:
-                                                            FontWeight.w300),
-                                                      ),
-                                                    ))
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      )),
                                 ],
+                                border: Border.all(color: Colors.white),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)),
                               ),
-                            )
-                          );
+                              margin: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 8.0),
+                              padding: EdgeInsets.fromLTRB(20.0, 8.0, 5.0, 8.0),
+                              child: GestureDetector(
+                                onDoubleTap: () {
+                                  Navigator.push(
+                                      context,
+                                      new MaterialPageRoute(
+                                        builder: (_) => ProductDetail(
+                                          title: "Product Detail page",
+                                          productDetail: productList[i],
+                                        ),
+                                      ));
+                                },
+                                child: ExpansionTile(
+                                  title: Row(
+                                    children: <Widget>[
+                                      Image.network(productList[i].thumbnail, width: 40, height: 40,),
+                                      Container(
+                                        width: 190.0,
+                                        margin: EdgeInsets.fromLTRB(
+                                            30.0, 0.0, 0.0, 0.0),
+                                        child: Text(
+                                          productList[i].product,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  children: <Widget>[
+                                    Container(
+                                      decoration: BoxDecoration(),
+                                      margin: EdgeInsets.fromLTRB(
+                                          30.0, 0.0, 0.0, 0.0),
+                                      child: ListTile(
+                                        title: Text(
+                                          "Rs. " + productList[i].price,
+                                          style: TextStyle(fontSize: 23),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                        child: Row(
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.fromLTRB(
+                                              15.0, 0.0, 0.0, 0.0),
+                                          margin: EdgeInsets.fromLTRB(
+                                              35.0, 0.0, 0.0, 20.0),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.blue),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(8)),
+                                          ),
+                                          child: Row(
+                                            children: <Widget>[
+                                              Icon(
+                                                Icons.call,
+                                                color: Colors.blue,
+                                              ),
+                                              Container(
+                                                  margin: EdgeInsets.fromLTRB(
+                                                      0.0, 0.0, 10.0, 0.0),
+                                                  child: FlatButton(
+                                                    onPressed: (){
+//                                                      cart.add(productList[i]);
+//                                                      print(checkDuplication());
+//                                                      sendDataToCart(productList[i]);
+                                                      launch("tel:"+ productList[i].owner_number);
+                                                    },
+                                                    child: Text(
+                                                      "Call him",
+                                                      style: TextStyle(
+                                                          fontSize: 17.0,
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.w300),
+                                                    ),
+                                                  ))
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ],
+                                ),
+                              ));
                         },
                       ),
+              ):Center(
+
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(0.0, MediaQuery.of(context).size.height/3, 0.0, 0.0),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                        child: Icon(FontAwesomeIcons.sadTear, size: 50,color: Colors.red,),
+                      ),
+                  Text("No item Available yet!", style: TextStyle(
+                      color: Colors.black
+                  ))
+                    ],
+                  ),
+                ),
               )
             ],
           ),
@@ -416,7 +555,6 @@ class _HomeState extends State<Home> {
       ),
     );
     return Text("asd");
-
   }
 
   void showCuperDialog<T>({BuildContext context, Widget child}) {
@@ -433,24 +571,28 @@ class _HomeState extends State<Home> {
       setState(() {
         this.image = "assets/images/grid.png";
         this.swiptDouble = "Double tap for details";
-
       });
       listGrid++;
     } else {
       setState(() {
         this.image = "assets/images/list.png";
         this.swiptDouble = "Swipe for details";
-
-
       });
       listGrid++;
     }
   }
+  List<Product> checkDuplication(){
+    cart = cart.toSet().toList();
+    return cart;
+  }
   Drawer returnDrawer() {
     return Drawer(
+        child: Container(
+      color: Colors.white,
       child: ListView(
         // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
+
+        padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
         children: <Widget>[
           DrawerHeader(
             child: Column(
@@ -462,7 +604,7 @@ class _HomeState extends State<Home> {
                 ),
                 Container(
                   margin: EdgeInsets.only(top: 20.0),
-                  child: Text("example@gmail.com"),
+                  child: Text(email),
                 )
               ],
             ),
@@ -486,7 +628,7 @@ class _HomeState extends State<Home> {
               },
             ),
           ),
-          Container(
+         /* Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Compose new product'),
@@ -498,16 +640,21 @@ class _HomeState extends State<Home> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => AddProductItem(title: "Add",),
-                ));
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => AddProductItem(
+                        title: "Add",
+                      ),
+                    ));
 //                Navigator.pop(context);
               },
             ),
-          ),Container(
+          ),*/
+          Container(
             color: Colors.white,
             child: ListTile(
-              title: Text('My items'),
+              title: Text('My Products'),
               trailing: Icon(
                 Icons.list,
                 color: Colors.red,
@@ -516,14 +663,41 @@ class _HomeState extends State<Home> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => Home(title: "My list",),
-                ));
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => MyProducts(
+                        title: "My Products",
+                      ),
+                    ));
 //                Navigator.pop(context);
-
               },
             ),
           ),
+          /*Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('My Orders'),
+              trailing: Icon(
+                Icons.bookmark_border,
+                color: Colors.red,
+              ),
+              onTap: () {
+                // Update the state of the app
+                // ...
+                // Then close the drawer
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) =>
+                          Order(
+                            title: "My Orders",
+                          ),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
+          ),*/
           Container(
             color: Colors.white,
             child: ListTile(
@@ -536,31 +710,37 @@ class _HomeState extends State<Home> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, new MaterialPageRoute(
-                  builder: (_) => Categories(title: "Category page",),
-                ));
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => Categories(
+                        title: "Category page",
+                      ),
+                    ));
 //                Navigator.pop(context);
-
               },
             ),
           ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Cart'),
-              trailing: Icon(
-                Icons.shopping_cart,
-                color: Colors.red,
-              ),
-              onTap: () {
-                Navigator.push(context, new MaterialPageRoute(
-                    builder: (_) => Cart(title: "Cart page",),
-                ));
-//                Navigator.pop(context);
-
-              },
-            ),
-          ),
+//          Container(
+//            color: Colors.white,
+//            child: ListTile(
+//              title: Text('Cart'),
+//              trailing: Icon(
+//                Icons.shopping_cart,
+//                color: Colors.red,
+//              ),
+//              onTap: () {
+//                Navigator.push(
+//                    context,
+//                    new MaterialPageRoute(
+//                      builder: (_) => Cart(
+//                        title: "Cart page",
+//                      ),
+//                    ));
+////                Navigator.pop(context);
+//              },
+//            ),
+//          ),
           Container(
             color: Colors.white,
             child: ListTile(
@@ -581,13 +761,260 @@ class _HomeState extends State<Home> {
                         title: "Login page",
                       ),
                     ),
-                        (e) => false);
+                    (e) => false);
               },
             ),
           ),
-
         ],
       ),
-    );
+    ));
+  }
+
+  void inputData() async {
+    final FirebaseUser user = await auth.currentUser();
+    uid = user.uid;
+    if (uid != null) {
+      setState(() {
+        email = user.email;
+      });
+    }
+
+    // here you write the codes to input the data into firestore
+  }
+
+  void searchProducts(String text){
+    if(text == ""){
+      readDataFromFireStore();
+      return;
+    }
+    List<Product> searchList = new List();
+    productList = prevList;
+
+    for(int i = 0 ; i < productList.length ; i++){
+      print(productList[i].product);
+      if(productList[i].product.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].price.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].product_id.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].province.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].city.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].prduct_category.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].short_desc.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].long_desc.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i].is_negotiable.toLowerCase().contains(text.toLowerCase())
+      ){
+        searchList.add(productList[i]);
+        print(searchList);
+      }
+    }
+    setState(() {
+      productList = searchList;
+    });
+  }
+
+
+
+  void readDataFromFireStore () {
+    if(widget.filter.toLowerCase() == "all"){
+      List<Product> isFeaturedList = new List();
+      List<Product> isNotFeaturedList = new List();
+      db.collection("products").where("is_feature", isEqualTo: false).getDocuments().then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) {
+          setState(() {
+            isNotFeaturedList.add(Product(
+                f.data["owner"],
+                f.data["owner_number"],
+                f.data["prduct_category"],
+                f.data["product"],
+                f.data["price"],
+                f.data["province"],
+                f.data["shot_desc"],
+                f.data["long_desc"],
+                f.data["is_negotiable"],
+                f.data["image_1"],
+                f.data["image_2"],
+                f.documentID,
+                f.data["thumbnail"],
+                f.data["image_3"],
+                f.data["city"],
+                f.data["current_date"],
+                f.data["expire_date"],
+                f.data["is_feature"],
+                f.data["quantity"]
+
+            ));
+          });
+          print("sixe: " + productList.length.toString());
+        });
+
+        setState(() {
+          isFeaturedList.sort((a, b){
+            return b.current_date.compareTo(a.current_date);
+          });
+          productList = isFeaturedList + isNotFeaturedList;
+          prevList = productList;
+          print(productList.length);
+        });
+        for(int i = 0; i< productList.length; i++){
+          print(productList[i].current_date.millisecondsSinceEpoch.toString()  + productList[i].is_feature.toString() + productList[i].product_id);
+        }
+      });
+
+      db.collection("products").where("is_feature", isEqualTo: true).getDocuments().then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) {
+//        setState(() {
+          isFeaturedList.add(Product(
+              f.data["owner"],
+              f.data["owner_number"],
+              f.data["prduct_category"],
+              f.data["product"],
+              f.data["price"],
+              f.data["province"],
+              f.data["shot_desc"],
+              f.data["long_desc"],
+              f.data["is_negotiable"],
+              f.data["image_1"],
+              f.data["image_2"],
+              f.documentID,
+              f.data["thumbnail"],
+              f.data["image_3"],
+              f.data["city"],
+              f.data["current_date"],
+              f.data["expire_date"],
+              f.data["is_feature"],
+              f.data["quantity"]
+
+          ));
+//        });
+          print("sixe: " + productList.length.toString());
+        });
+
+        setState(() {
+          isNotFeaturedList.sort((a, b){
+            return b.current_date.compareTo(a.current_date);
+          });
+          productList = isFeaturedList + isNotFeaturedList;
+          prevList = productList;
+
+          print(productList.length);
+        });
+        for(int i = 0; i< productList.length; i++){
+          print(productList[i].current_date.millisecondsSinceEpoch.toString()  + productList[i].is_feature.toString());
+        }
+
+      });
+
+    }else if(widget.filter == uid){
+
+      List<Product> isFeaturedList = new List();
+      List<Product> isNotFeaturedList = new List();
+      db.collection("products").where("uid", isEqualTo: widget.filter).getDocuments().then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) {
+          setState(() {
+            isNotFeaturedList.add(Product(
+                f.data["owner"],
+                f.data["owner_number"],
+                f.data["prduct_category"],
+                f.data["product"],
+                f.data["price"],
+                f.data["province"],
+                f.data["shot_desc"],
+                f.data["long_desc"],
+                f.data["is_negotiable"],
+                f.data["image_1"],
+                f.data["image_2"],
+                f.documentID,
+                f.data["thumbnail"],
+                f.data["image_3"],
+                f.data["city"],
+                f.data["current_date"],
+                f.data["expire_date"],
+                f.data["is_feature"],
+                f.data["quantity"]
+
+            ));
+          });
+        });
+
+        setState(() {
+          isFeaturedList.sort((a, b){
+            return b.current_date.millisecondsSinceEpoch.compareTo(a.current_date.millisecondsSinceEpoch);
+          });
+          productList = isFeaturedList + isNotFeaturedList;
+          prevList = productList;
+          print(productList.length);
+        });
+      });
+    } else{
+      List<Product> isFeaturedList = new List();
+      List<Product> isNotFeaturedList = new List();
+      db.collection("products").where("prduct_category", isEqualTo: widget.filter).getDocuments().then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) {
+          setState(() {
+            isNotFeaturedList.add(Product(
+                f.data["owner"],
+                f.data["owner_number"],
+                f.data["prduct_category"],
+                f.data["product"],
+                f.data["price"],
+                f.data["province"],
+                f.data["shot_desc"],
+                f.data["long_desc"],
+                f.data["is_negotiable"],
+                f.data["image_1"],
+                f.data["image_2"],
+                f.documentID,
+                f.data["thumbnail"],
+                f.data["image_3"],
+                f.data["city"],
+                f.data["current_date"],
+                f.data["expire_date"],
+                f.data["is_feature"],
+                f.data["quantity"]
+
+            ));
+          });
+        });
+
+        setState(() {
+          isFeaturedList.sort((a, b){
+            return b.current_date.millisecondsSinceEpoch.compareTo(a.current_date.millisecondsSinceEpoch);
+          });
+          productList = isFeaturedList + isNotFeaturedList;
+          prevList = productList;
+          print(productList.length);
+        });
+      });
+
+    }
+
+
+
+  }
+
+  Future<void> sendDataToCart(Product cartData) async {
+
+
+
+    Map<String, Object> product = new HashMap();
+    product['owner'] = cartData.owner;
+    product['owner_number'] = cartData.owner_number;
+    product['product'] = cartData.product;
+    product['prduct_category'] = cartData.prduct_category;
+    product['shot_desc'] = cartData.short_desc;
+    product['long_desc'] = cartData.long_desc;
+    product['price'] = cartData.price;
+    product['quantity'] = cartData.quantity;
+    product['is_negotiable'] = cartData.is_negotiable;
+    product['city'] = cartData.city;
+    product['province'] = cartData.province;
+    product['is_feature'] = cartData.is_feature;
+    product['expire_date'] = cartData.expiry_date;
+    product['current_date'] = cartData.current_date;
+    product['image_1'] = cartData.image_1;
+    product['image_2'] = cartData.image_2;
+    product['image_3'] = cartData.image_3;
+    product['thumbnail'] = cartData.thumbnail;
+    product['uid'] = uid;
+    db.collection("cart").document(cartData.product_id).setData(product);
   }
 }

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -49,6 +50,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Timer _timer;
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +104,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int _start = 5;
 
-  void timerForSplash() {
+  Future<void> timerForSplash() async {
+    final FirebaseUser user = await auth.currentUser();
+//    final uid = ;
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
       oneSec,
@@ -112,16 +116,45 @@ class _MyHomePageState extends State<MyHomePage> {
                 () {
                 if (_start < 1) {
                   print("return");
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Login(
-                      title: "Login page",
-                    ),
-                  ),
-                  (e) => false);
-                  return;
-                } else {
+                  try {
+                    if (user.uid != null) {
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                Home(
+                                  title: "Home page",
+                                  filter: "All",
+                                ),
+                          ),
+                              (e) => false);
+                      return;
+                    } else {
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                Login(
+                                  title: "Login page",
+                                ),
+                          ),
+                              (e) => false);
+                      return;
+                    }
+                  }catch(e){
+                    print(e);
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              Login(
+                                title: "Login page",
+                              ),
+                        ),
+                            (e) => false);
+                    return;
+                  }
+                  } else {
                   _start = _start - 1;
                 }
 

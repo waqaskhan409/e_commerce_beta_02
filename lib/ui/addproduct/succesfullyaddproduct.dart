@@ -128,6 +128,7 @@ class _SuccesfullAddProductState extends State<SuccesfullAddProduct> {
                                     new MaterialPageRoute(
                                       builder: (_) => Home(
                                         title: "Home page",
+                                        filter: "All",
                                       ),
                                     ));
                               },
