@@ -8,6 +8,7 @@ import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
 import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
 import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
@@ -144,7 +145,7 @@ class _HomeState extends State<Home> {
                       GestureDetector(
 
                         child: Container(
-                          margin: EdgeInsets.fromLTRB(30.0, 40.0, 0.0, 0.0),
+                          margin: EdgeInsets.fromLTRB(30.0, 30.0, 0.0, 0.0),
                           child: IconButton(
                             onPressed: (){
                               _drawerKey.currentState.openDrawer();
@@ -154,7 +155,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.fromLTRB(20.0, 40.0, 0.0, 0.0),
+                        margin: EdgeInsets.fromLTRB(20.0, 30.0, 0.0, 0.0),
                         child: Text(
                           "HOME",
                           style: TextStyle(color: Colors.white, fontSize: 18.0),
@@ -182,7 +183,7 @@ class _HomeState extends State<Home> {
                   ),
                   Container(
                     child: Container(
-                      margin: EdgeInsets.fromLTRB(30.0, 50.0, 30.0, 10.0),
+                      margin: EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 10.0),
                       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -625,6 +626,14 @@ class _HomeState extends State<Home> {
                 // ...
                 // Then close the drawer
                 Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => Home(
+                        title: "Home page",
+                        filter: "All",
+                      ),
+                    ));
               },
             ),
           ),
@@ -673,7 +682,31 @@ class _HomeState extends State<Home> {
 //                Navigator.pop(context);
               },
             ),
-          ),
+          ),email == "dukaan@gmail.com" ?
+          Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('All Product'),
+              trailing: Icon(
+                Icons.bookmark_border,
+                color: Colors.red,
+              ),
+              onTap: () {
+                // Update the state of the app
+                // ...
+                // Then close the drawer
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) =>
+                          AllProduct(
+                            title: "All Products",
+                          ),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
+          ):Container(),
           /*Container(
             color: Colors.white,
             child: ListTile(

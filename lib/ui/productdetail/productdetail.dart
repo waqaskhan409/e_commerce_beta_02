@@ -8,6 +8,7 @@ import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
 import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +16,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetail extends StatefulWidget {
@@ -254,12 +256,11 @@ class _ProductDetailState extends State<ProductDetail> {
                                   ],
                                 ),
                               ),
-                              Spacer(),
                               Container(
                                 padding:
                                     EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 0.0),
                                 margin:
-                                    EdgeInsets.fromLTRB(10.0, 0.0, 30.0, 20.0),
+                                    EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 20.0),
                                 decoration: BoxDecoration(
                                   color: Color.fromRGBO(218, 36, 46, 40),
                                   border: Border.all(
@@ -367,19 +368,9 @@ class _ProductDetailState extends State<ProductDetail> {
                            ),
                            Row(
                              children: <Widget>[
-                               Container(
-                                 margin: EdgeInsets.fromLTRB(30.0, 10.0,0.0, 10.0),
-                                 child: IconButton(
-                                   onPressed: (){
-                                    launch("tel:"+ widget.productDetail.owner_number);
-                                    print("Called");
 
-                                   },
-                                   icon: Icon(Icons.call, color: Colors.blue,),
-                                 ),
-                               ),
                                Container(
-                                 margin: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                 margin: EdgeInsets.fromLTRB(30.0, 10.0, 0.0, 10.0),
                                  child: IconButton(
                                    onPressed: (){
                                      launch("sms:"+ widget.productDetail.owner_number);
@@ -400,6 +391,17 @@ class _ProductDetailState extends State<ProductDetail> {
 
                                    },
                                    icon: Icon(FontAwesomeIcons.copy, color: Colors.black,),
+                                 ),
+                               ),
+                               Container(
+                                 margin: EdgeInsets.fromLTRB(10.0, 10.0,0.0, 10.0),
+                                 child: IconButton(
+                                   onPressed: (){
+//                                     launch("tel:"+ widget.productDetail.owner_number);
+//                                     print("Called");
+                                     Share.share(widget.productDetail.owner_number);
+                                   },
+                                   icon: Icon(Icons.share, color: Colors.red,),
                                  ),
                                ),
                              ],
@@ -541,7 +543,7 @@ class _ProductDetailState extends State<ProductDetail> {
       child: ListView(
         // Important: Remove any padding from the ListView.
 
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
         children: <Widget>[
           DrawerHeader(
             child: Column(
@@ -584,7 +586,7 @@ class _ProductDetailState extends State<ProductDetail> {
               },
             ),
           ),
-          Container(
+        /*  Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Compose new product'),
@@ -607,7 +609,7 @@ class _ProductDetailState extends State<ProductDetail> {
 //                Navigator.pop(context);
               },
             ),
-          ),
+          ),*/
           Container(
             color: Colors.white,
             child: ListTile(
@@ -631,10 +633,11 @@ class _ProductDetailState extends State<ProductDetail> {
               },
             ),
           ),
+         email == "dukaan@gmail.com" ?
           Container(
             color: Colors.white,
             child: ListTile(
-              title: Text('My Orders'),
+              title: Text('All Product'),
               trailing: Icon(
                 Icons.bookmark_border,
                 color: Colors.red,
@@ -647,14 +650,14 @@ class _ProductDetailState extends State<ProductDetail> {
                     context,
                     new MaterialPageRoute(
                       builder: (_) =>
-                          Order(
-                            title: "My list",
+                          AllProduct(
+                            title: "All Products",
                           ),
                     ));
 //                Navigator.pop(context);
               },
             ),
-          ),
+          ):Container(),
           Container(
             color: Colors.white,
             child: ListTile(
@@ -726,6 +729,7 @@ class _ProductDetailState extends State<ProductDetail> {
       ),
     ));
   }
+
 
   void inputData() async {
     final FirebaseUser user = await auth.currentUser();

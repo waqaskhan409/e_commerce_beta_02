@@ -3,6 +3,7 @@ import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
 import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
 import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -157,7 +158,7 @@ class _CategoriesState extends State<Categories> {
       child: ListView(
         // Important: Remove any padding from the ListView.
 
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
         children: <Widget>[
           DrawerHeader(
             child: Column(
@@ -246,7 +247,31 @@ class _CategoriesState extends State<Categories> {
 //                Navigator.pop(context);
               },
             ),
-          ),
+          ),email == "dukaan@gmail.com" ?
+          Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('All Product'),
+              trailing: Icon(
+                Icons.bookmark_border,
+                color: Colors.red,
+              ),
+              onTap: () {
+                // Update the state of the app
+                // ...
+                // Then close the drawer
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) =>
+                          AllProduct(
+                            title: "All Products",
+                          ),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
+          ):Container(),
           /*Container(
             color: Colors.white,
             child: ListTile(

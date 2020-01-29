@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: "Splash Screen",),
+      home: SuccesfullAddProduct(title: "Splash Screen",
+      documentId: "MZQraN3iwuKhtRTI7ehr",),
     );;
   }
   }

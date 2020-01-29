@@ -4,6 +4,7 @@ import 'package:e_commerce_beta/ui/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
@@ -193,7 +194,7 @@ class _RegistrationState extends State<Registration> {
                             }
                           },
                           child: Text(
-                            'SIGN IN',
+                            'SIGN UP',
                             style: TextStyle(color: Colors.black),
                           )),
                     ),
@@ -210,25 +211,31 @@ class _RegistrationState extends State<Registration> {
                           googleSignIn();
                         },
                         child: Container(
-                          margin: EdgeInsets.fromLTRB(25.0, 15.0, 0.0, 0.0),
-                          child: Image.asset(
-                            "assets/images/google.png",
-                            width: 60.0,
-                            height: 60.0,
-                          ),
+                          margin: EdgeInsets.fromLTRB(25.0, 25.0, 0.0, 0.0),
+                          child: IconButton(
+                              onPressed: () {
+                                googleSignIn();
+                              },
+                              icon: Icon(
+                                FontAwesomeIcons.google,
+                                size: 35,
+                                color: Colors.red,
+                              )),
                         ),
                       ),
                       GestureDetector(
-                        onTap: (){
-                          facebookSignIn();
-                        },
                         child: Container(
                           margin: EdgeInsets.fromLTRB(5.0, 15.0, 0.0, 0.0),
-                          child: Image.asset(
-                            "assets/images/facebook.png",
-                            width: 60.0,
-                            height: 60.0,
-                          ),
+                          child: IconButton(
+                              onPressed: (){
+                                facebookSignIn();
+
+                              },
+                              icon: Icon(
+                                FontAwesomeIcons.facebook,
+                                size: 45,
+                                color: Colors.blue,
+                              )),
                         ),
                       )
                     ],
@@ -250,7 +257,7 @@ class _RegistrationState extends State<Registration> {
                         ));
                   },
                   child: Container(
-                    margin: EdgeInsets.fromLTRB(230.0, 15.0, 20.0, 0.0),
+                    margin: EdgeInsets.fromLTRB(230.0, 15.0, 20.0, 40.0),
                     child: Text(
                       "Sign in",
                       style: TextStyle(color: Colors.white, fontSize: 20.0),
@@ -289,6 +296,7 @@ class _RegistrationState extends State<Registration> {
           new MaterialPageRoute(
             builder: (_) => Home(
               title: "Home page",
+              filter: "All",
             ),
           ));
       return user;

@@ -70,6 +70,7 @@ class _AddProductState extends State<AddProductItem>
   void initState() {
     super.initState();
 
+    inputData();
     pr = new ProgressDialog(context);
     pr.style(message: "Adding product ...");
     pr = new ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
@@ -1414,7 +1415,7 @@ class _AddProductState extends State<AddProductItem>
     }else if(index == 2){
       Map<String, Object> imagesMap = new HashMap();
       String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
-      imagesMap["image_1"] = imageUrl;
+      imagesMap["image_3"] = imageUrl;
       imagesMap["thumbnail"] = imageUrl;
       Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
 

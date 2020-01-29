@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce_beta/model/productmodel.dart';
 import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
+import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'addproduct.dart';
@@ -20,7 +24,18 @@ class SuccesfullAddProduct extends StatefulWidget {
 
 class _SuccesfullAddProductState extends State<SuccesfullAddProduct> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+  Product product;
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final Firestore db = Firestore.instance;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    getData();
+
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
@@ -110,39 +125,81 @@ class _SuccesfullAddProductState extends State<SuccesfullAddProduct> {
                       style: TextStyle(color: Colors.black87, fontSize: 14.0),
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(15.0, .0, 5.0, 0.0),
-                    margin: EdgeInsets.fromLTRB(120.0, 100.0, 120.0, 0.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.orangeAccent),
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                            margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                            child: FlatButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    new MaterialPageRoute(
-                                      builder: (_) => Home(
-                                        title: "Home page",
-                                        filter: "All",
-                                      ),
-                                    ));
-                              },
-                              child: Text(
-                                "Back to catalog",
-                                style: TextStyle(
-                                    fontSize: 15.0,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w300),
-                              ),
-                            ))
-                      ],
-                    ),
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.fromLTRB(.0, .0, .0, 0.0),
+                        margin: EdgeInsets.fromLTRB(40.0, 100.0, 0.0, 0.0),
+                        decoration: BoxDecoration(
+
+                          border: Border.all(color: Colors.green),
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                                margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                                child: FlatButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        new MaterialPageRoute(
+                                          builder: (_) => ProductDetail(
+                                            title: "Home page",
+                                            productDetail: product,
+                                          ),
+                                        ));
+                                  },
+                                  child: Text(
+                                    "Continue",
+                                    style: TextStyle(
+                                        fontSize: 15.0,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w300),
+                                  ),
+                                )),
+
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                        margin: EdgeInsets.fromLTRB(10.0, 100.0, 0.0, 0.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.orangeAccent),
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                                margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                                child: FlatButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        new MaterialPageRoute(
+                                          builder: (_) => Home(
+                                            title: "Home page",
+                                            filter: "All",
+                                          ),
+                                        ));
+                                  },
+                                  child: Text(
+                                    "Back to catalog",
+                                    style: TextStyle(
+                                        fontSize: 15.0,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w300),
+                                  ),
+                                )),
+
+                          ],
+                        ),
+                      ),
+
+                    ],
                   )
+
                 ],
               ),
             ),
@@ -307,5 +364,32 @@ class _SuccesfullAddProductState extends State<SuccesfullAddProduct> {
         ],
       ),
     );
+  }
+
+  void getData() async {
+    db.collection("products").document(widget.documentId).get().then((product){
+      this.product = Product(
+          product["owner"],
+          product["owner_number"],
+          product["prduct_category"],
+          product["product"],
+          product["price"],
+          product["province"],
+          product["shot_desc"],
+          product["long_desc"],
+          product["is_negotiable"],
+          product["image_1"],
+          product["image_2"],
+          widget.documentId,
+          product["thumbnail"],
+          product["image_3"],
+          product["city"],
+          product["current_date"],
+          product["expire_date"],
+          product["is_feature"],
+          product["quantity"]
+
+      );
+    });
   }
 }

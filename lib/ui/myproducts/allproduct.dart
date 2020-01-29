@@ -5,7 +5,6 @@ import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
-import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,19 +12,19 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class MyProducts extends StatefulWidget {
-  MyProducts({Key key, this.title}) : super(key: key);
+class AllProduct extends StatefulWidget {
+  AllProduct({Key key, this.title}) : super(key: key);
   String title;
 
   @override
-  _MyProductsState createState() => _MyProductsState();
+  _AllProductsState createState() => _AllProductsState();
 }
 
-class _MyProductsState extends State<MyProducts> {
+class _AllProductsState extends State<AllProduct> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseStorage storage =
-      FirebaseStorage(storageBucket: 'gs://e-commerce-66aeb.appspot.com/');
+  FirebaseStorage(storageBucket: 'gs://e-commerce-66aeb.appspot.com/');
   final Firestore db = Firestore.instance;
   List<Product> prevList = new List();
   List<Product> productList = new List();
@@ -153,164 +152,164 @@ class _MyProductsState extends State<MyProducts> {
               ),
               productList.length != 0
                   ? Expanded(
-                      child: ListView.builder(
-                        itemCount: productList.length,
-                        itemBuilder: (context, i) {
-                          return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 5.0,
-                                    // has the effect of softening the shadow
-                                    spreadRadius: 3.0,
-                                    // has the effect of extending the shadow
-                                    offset: Offset(
-                                      2.0, // horizontal, move right 10
-                                      2.0, // vertical, move down 10
-                                    ),
-                                  ),
-                                ],
-                                border: Border.all(color: Colors.white),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
+                child: ListView.builder(
+                  itemCount: productList.length,
+                  itemBuilder: (context, i) {
+                    return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 5.0,
+                              // has the effect of softening the shadow
+                              spreadRadius: 3.0,
+                              // has the effect of extending the shadow
+                              offset: Offset(
+                                2.0, // horizontal, move right 10
+                                2.0, // vertical, move down 10
                               ),
-                              margin: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 8.0),
-                              padding: EdgeInsets.fromLTRB(20.0, 8.0, 5.0, 8.0),
-                              child: GestureDetector(
-                                onDoubleTap: () {
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                        builder: (_) => ProductDetail(
-                                          title: "Product Detail page",
-                                          productDetail: productList[i],
-                                        ),
-                                      ));
-                                },
-                                child: ExpansionTile(
-                                  title: Row(
-                                    children: <Widget>[
-                                      Image.network(
-                                        productList[i].thumbnail,
-                                        width: 40,
-                                        height: 40,
-                                      ),
-                                      Container(
-                                        width: 190.0,
-                                        margin: EdgeInsets.fromLTRB(
-                                            30.0, 0.0, 0.0, 0.0),
-                                        child: Text(
-                                          productList[i].product,
-                                        ),
-                                      )
-                                    ],
+                            ),
+                          ],
+                          border: Border.all(color: Colors.white),
+                          borderRadius:
+                          BorderRadius.all(Radius.circular(8)),
+                        ),
+                        margin: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 8.0),
+                        padding: EdgeInsets.fromLTRB(20.0, 8.0, 5.0, 8.0),
+                        child: GestureDetector(
+                          onDoubleTap: () {
+                            Navigator.push(
+                                context,
+                                new MaterialPageRoute(
+                                  builder: (_) => ProductDetail(
+                                    title: "Product Detail page",
+                                    productDetail: productList[i],
                                   ),
-                                  children: <Widget>[
-                                    productList[i].is_expire == true ? Container(
-                                      decoration: BoxDecoration(),
-                                      margin: EdgeInsets.fromLTRB(
-                                          30.0, 0.0, 0.0, 0.0),
-                                      child: ListTile(
-                                        title: Text(
-                                          "Expired",
-                                          style: TextStyle(fontSize: 23, color: Colors.red),
+                                ));
+                          },
+                          child: ExpansionTile(
+                            title: Row(
+                              children: <Widget>[
+                                Image.network(
+                                  productList[i].thumbnail,
+                                  width: 40,
+                                  height: 40,
+                                ),
+                                Container(
+                                  width: 190.0,
+                                  margin: EdgeInsets.fromLTRB(
+                                      30.0, 0.0, 0.0, 0.0),
+                                  child: Text(
+                                    productList[i].product,
+                                  ),
+                                )
+                              ],
+                            ),
+                            children: <Widget>[
+                              productList[i].is_expire == true ? Container(
+                                decoration: BoxDecoration(),
+                                margin: EdgeInsets.fromLTRB(
+                                    30.0, 0.0, 0.0, 0.0),
+                                child: ListTile(
+                                  title: Text(
+                                    "Expired",
+                                    style: TextStyle(fontSize: 23, color: Colors.red),
+                                  ),
+                                ),
+                              ): Container(
+                                decoration: BoxDecoration(),
+                                margin: EdgeInsets.fromLTRB(
+                                    30.0, 0.0, 0.0, 0.0),
+                                child: ListTile(
+                                  title: Text(
+                                    "Not expired yet!",
+                                    style: TextStyle(fontSize: 23, color: Colors.green),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(),
+                                margin: EdgeInsets.fromLTRB(
+                                    30.0, 0.0, 0.0, 0.0),
+                                child: ListTile(
+                                  title: Text(
+                                    "Rs. " + productList[i].price,
+                                    style: TextStyle(fontSize: 23),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.fromLTRB(
+                                            15.0, 0.0, 0.0, 0.0),
+                                        margin: EdgeInsets.fromLTRB(
+                                            35.0, 0.0, 0.0, 20.0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          border:
+                                          Border.all(color: Colors.red),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
                                         ),
-                                      ),
-                                    ): Container(
-                                      decoration: BoxDecoration(),
-                                      margin: EdgeInsets.fromLTRB(
-                                          30.0, 0.0, 0.0, 0.0),
-                                      child: ListTile(
-                                        title: Text(
-                                          "Not expired yet!",
-                                          style: TextStyle(fontSize: 23, color: Colors.green),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(),
-                                      margin: EdgeInsets.fromLTRB(
-                                          30.0, 0.0, 0.0, 0.0),
-                                      child: ListTile(
-                                        title: Text(
-                                          "Rs. " + productList[i].price,
-                                          style: TextStyle(fontSize: 23),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
                                         child: Row(
-                                      children: <Widget>[
-                                        Container(
-                                          padding: EdgeInsets.fromLTRB(
-                                              15.0, 0.0, 0.0, 0.0),
-                                          margin: EdgeInsets.fromLTRB(
-                                              35.0, 0.0, 0.0, 20.0),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            border:
-                                                Border.all(color: Colors.red),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(8)),
-                                          ),
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.delete,
-                                                color: Colors.white,
-                                              ),
-                                              Container(
-                                                  margin: EdgeInsets.fromLTRB(
-                                                      0.0, 0.0, 0.0, 0.0),
-                                                  child: FlatButton(
-                                                    onPressed: () {
+                                          children: <Widget>[
+                                            Icon(
+                                              Icons.delete,
+                                              color: Colors.white,
+                                            ),
+                                            Container(
+                                                margin: EdgeInsets.fromLTRB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                                child: FlatButton(
+                                                  onPressed: () {
 //                                                      deleteProduct(
 //                                                          productList[i]);
 //                                                      productList.removeAt(i);
                                                     showDialogue(productList[i], i);
-                                                    },
-                                                    child: Text(
-                                                      "Remove from database",
-                                                      style: TextStyle(
-                                                          fontSize: 17.0,
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w300),
-                                                    ),
-                                                  ))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    )),
-                                  ],
-                                ),
-                              ));
-                        },
-                      ),
-                    )
+                                                  },
+                                                  child: Text(
+                                                    "Remove from database",
+                                                    style: TextStyle(
+                                                        fontSize: 17.0,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.w300),
+                                                  ),
+                                                ))
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  )),
+                            ],
+                          ),
+                        ));
+                  },
+                ),
+              )
                   : Center(
-                      child: Container(
-                        margin: EdgeInsets.fromLTRB(0.0,
-                            MediaQuery.of(context).size.height / 3, 0.0, 0.0),
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
-                              child: Icon(
-                                FontAwesomeIcons.store,
-                                size: 50,
-                                color: Colors.red,
-                              ),
-                            ),
-                            Text("You didn't have any orders yet!",
-                                style: TextStyle(color: Colors.black))
-                          ],
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(0.0,
+                      MediaQuery.of(context).size.height / 3, 0.0, 0.0),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                        child: Icon(
+                          FontAwesomeIcons.store,
+                          size: 50,
+                          color: Colors.red,
                         ),
                       ),
-                    )
+                      Text("You didn't have any orders yet!",
+                          style: TextStyle(color: Colors.black))
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -321,54 +320,54 @@ class _MyProductsState extends State<MyProducts> {
   Drawer returnDrawer() {
     return Drawer(
         child: Container(
-      color: Colors.white,
-      child: ListView(
-        // Important: Remove any padding from the ListView.
+          color: Colors.white,
+          child: ListView(
+            // Important: Remove any padding from the ListView.
 
-        padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
-        children: <Widget>[
-          DrawerHeader(
-            child: Column(
-              children: <Widget>[
-                Image.asset(
-                  "assets/images/Logo.png",
-                  width: 80,
-                  height: 80,
+            padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                  children: <Widget>[
+                    Image.asset(
+                      "assets/images/Logo.png",
+                      width: 80,
+                      height: 80,
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 20.0),
+                      child: Text(email),
+                    )
+                  ],
                 ),
-                Container(
-                  margin: EdgeInsets.only(top: 20.0),
-                  child: Text(email),
-                )
-              ],
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Home'),
-              trailing: Icon(
-                Icons.home,
-                color: Colors.red,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
               ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => Home(
-                        title: "Hom page",
-                        filter: "All",
-                      ),
-                    ));
-              },
-            ),
-          ),
-          /*Container(
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Home'),
+                  trailing: Icon(
+                    Icons.home,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) => Home(
+                            title: "Hom page",
+                            filter: "All",
+                          ),
+                        ));
+                  },
+                ),
+              ),
+              /*Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Compose new product'),
@@ -391,48 +390,48 @@ class _MyProductsState extends State<MyProducts> {
               },
             ),
           ),*/
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('My products'),
-              trailing: Icon(
-                Icons.list,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('My products'),
+                  trailing: Icon(
+                    Icons.list,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
 
-                Navigator.pop(context);
-              },
-            ),
-          ),email == "dukaan@gmail.com" ?
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('All Product'),
-              trailing: Icon(
-                Icons.bookmark_border,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) =>
-                          AllProduct(
-                            title: "All Products",
-                          ),
-                    ));
+                    Navigator.pop(context);
+                  },
+                ),
+              ),email == "dukaan@gmail.com" ?
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('All Product'),
+                  trailing: Icon(
+                    Icons.bookmark_border,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) =>
+                              AllProduct(
+                                title: "All Products",
+                              ),
+                        ));
 //                Navigator.pop(context);
-              },
-            ),
-          ):Container(),
-          /*Container(
+                  },
+                ),
+              ):Container(),
+              /*Container(
             color: Colors.white,
             child: ListTile(
               title: Text('My Orders'),
@@ -448,30 +447,30 @@ class _MyProductsState extends State<MyProducts> {
               },
             ),
           ),*/
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Categories'),
-              trailing: Icon(
-                Icons.category,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) => Categories(
-                        title: "Category page",
-                      ),
-                    ));
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Categories'),
+                  trailing: Icon(
+                    Icons.category,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.push(
+                        context,
+                        new MaterialPageRoute(
+                          builder: (_) => Categories(
+                            title: "Category page",
+                          ),
+                        ));
 //                Navigator.pop(context);
-              },
-            ),
-          ),
-          /*Container(
+                  },
+                ),
+              ),
+              /*Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Cart'),
@@ -491,33 +490,33 @@ class _MyProductsState extends State<MyProducts> {
               },
             ),
           ),*/
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('Logout'),
-              trailing: Icon(
-                Icons.reply,
-                color: Colors.red,
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text('Logout'),
+                  trailing: Icon(
+                    Icons.reply,
+                    color: Colors.red,
+                  ),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    auth.signOut();
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => Login(
+                            title: "Login page",
+                          ),
+                        ),
+                            (e) => false);
+                  },
+                ),
               ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                auth.signOut();
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => Login(
-                        title: "Login page",
-                      ),
-                    ),
-                    (e) => false);
-              },
-            ),
+            ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 
   void inputData() async {
@@ -578,7 +577,7 @@ class _MyProductsState extends State<MyProducts> {
 
     db
         .collection("products")
-        .where("uid", isEqualTo: uid)
+//        .where("uid", isEqualTo: uid)
         .getDocuments()
         .then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((f) {
