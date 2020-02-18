@@ -387,7 +387,13 @@ class _SuccesfullAddProductState extends State<SuccesfullAddProduct> {
           product["current_date"],
           product["expire_date"],
           product["is_feature"],
-          product["quantity"]
+          product["quantity"],
+          product["call_count"],
+          product["views_count"],
+          product["uid"],
+          product["likes_count"],
+
+
 
       );
     });

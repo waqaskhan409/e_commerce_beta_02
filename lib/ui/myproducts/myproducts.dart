@@ -13,6 +13,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'likedproduct.dart';
+
 class MyProducts extends StatefulWidget {
   MyProducts({Key key, this.title}) : super(key: key);
   String title;
@@ -471,26 +473,24 @@ class _MyProductsState extends State<MyProducts> {
               },
             ),
           ),
-          /*Container(
+          Container(
             color: Colors.white,
             child: ListTile(
-              title: Text('Cart'),
+              title: Text('Liked Products'),
               trailing: Icon(
-                Icons.shopping_cart,
+                FontAwesomeIcons.heart,
                 color: Colors.red,
               ),
               onTap: () {
                 Navigator.push(
                     context,
                     new MaterialPageRoute(
-                      builder: (_) => Cart(
-                        title: "Cart page",
-                      ),
+                      builder: (_) => LikedProduct(),
                     ));
 //                Navigator.pop(context);
               },
             ),
-          ),*/
+          ),
           Container(
             color: Colors.white,
             child: ListTile(
@@ -602,7 +602,15 @@ class _MyProductsState extends State<MyProducts> {
               f.data["current_date"],
               f.data["expire_date"],
               f.data["is_feature"],
-              f.data["quantity"]));
+              f.data["quantity"],
+              f.data["call_count"],
+              f.data["views_count"],
+              f.data["uid"],
+              f.data["likes_count"],
+
+
+
+          ));
         });
         print("sixe: " + productList.length.toString());
       });

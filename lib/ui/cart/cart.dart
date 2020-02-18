@@ -799,7 +799,12 @@ class _CartState extends State<Cart> {
               f.data["current_date"],
               f.data["expire_date"],
               f.data["is_feature"],
-              f.data["quantity"]
+              f.data["quantity"],
+              f.data["call_count"],
+              f.data["views_count"],
+              f.data["uid"],
+              f.data["likes_count"]
+
 
           ));
         });

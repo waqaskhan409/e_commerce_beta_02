@@ -4,10 +4,12 @@ import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
 import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
+import 'package:e_commerce_beta/ui/myproducts/likedproduct.dart';
 import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Categories extends StatefulWidget {
   Categories({Key key, this.title}) : super(key: key);
@@ -314,26 +316,24 @@ class _CategoriesState extends State<Categories> {
               },
             ),
           ),
-//          Container(
-//            color: Colors.white,
-//            child: ListTile(
-//              title: Text('Cart'),
-//              trailing: Icon(
-//                Icons.shopping_cart,
-//                color: Colors.red,
-//              ),
-//              onTap: () {
-//                Navigator.push(
-//                    context,
-//                    new MaterialPageRoute(
-//                      builder: (_) => Cart(
-//                        title: "Cart page",
-//                      ),
-//                    ));
-////                Navigator.pop(context);
-//              },
-//            ),
-//          ),
+          Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('Liked Products'),
+              trailing: Icon(
+                FontAwesomeIcons.heart,
+                color: Colors.red,
+              ),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => LikedProduct(),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
+          ),
           Container(
             color: Colors.white,
             child: ListTile(

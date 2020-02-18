@@ -9,6 +9,7 @@ import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
 import 'package:e_commerce_beta/ui/myproducts/allproduct.dart';
+import 'package:e_commerce_beta/ui/myproducts/likedproduct.dart';
 import 'package:e_commerce_beta/ui/myproducts/myproducts.dart';
 import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
@@ -60,10 +61,8 @@ class _HomeState extends State<Home> {
   List<Product> productList = new List();
   List<Product> cart = new List();
   List<Product> prevList = new List();
+  List<Product> likesList = new List();
   IconData iconList = Icons.list;
-
-
-
 
   final List<String> list = <String>[
     "assets/images/mobilesell.png",
@@ -96,7 +95,7 @@ class _HomeState extends State<Home> {
   double _value = 0.0;
 
   @override
-  Future<void> initState()  {
+  Future<void> initState() {
     // TODO: implement initState
 
     inputData();
@@ -116,7 +115,7 @@ class _HomeState extends State<Home> {
       ),
       Scaffold(
         floatingActionButton: FloatingActionButton(
-          onPressed: (){
+          onPressed: () {
             Navigator.push(
                 context,
                 new MaterialPageRoute(
@@ -143,14 +142,17 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
-
                         child: Container(
                           margin: EdgeInsets.fromLTRB(30.0, 30.0, 0.0, 0.0),
                           child: IconButton(
-                            onPressed: (){
+                            onPressed: () {
                               _drawerKey.currentState.openDrawer();
                             },
-                            icon: Icon(Icons.dehaze, color: Colors.white, size: 30.0,),
+                            icon: Icon(
+                              Icons.dehaze,
+                              color: Colors.white,
+                              size: 30.0,
+                            ),
                           ),
                         ),
                       ),
@@ -191,18 +193,17 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                       child: TextFormField(
-                        onChanged: (text){
+                        onChanged: (text) {
                           searchProducts(text);
                         },
                         style: TextStyle(
                           fontSize: 20.0,
                         ),
                         decoration: new InputDecoration(
-                          hintText: 'Find a product',
-                          border: InputBorder.none,
-                          suffix: Image.asset("assets/images/search.png"),
-                          icon: Icon(Icons.search)
-                        ),
+                            hintText: 'Find a product',
+                            border: InputBorder.none,
+                            suffix: Image.asset("assets/images/search.png"),
+                            icon: Icon(Icons.search)),
                       ),
                     ),
                   ),
@@ -225,16 +226,19 @@ class _HomeState extends State<Home> {
                         child: Container(
                           margin: EdgeInsets.fromLTRB(0.0, 0.0, 30.0, 10.0),
                           child: IconButton(
-                            onPressed: (){
+                            onPressed: () {
                               setState(() {
-                                if(iconList == Icons.list){
+                                if (iconList == Icons.list) {
                                   iconList = Icons.grid_on;
-                                }else{
+                                } else {
                                   iconList = Icons.list;
                                 }
                               });
                             },
-                            icon: Icon(iconList, color: Colors.white,),
+                            icon: Icon(
+                              iconList,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       )
@@ -242,290 +246,320 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ),
-              productList.length != 0 ?
-              Expanded(
-                child: iconList == Icons.list
-                    ? GridView.count(
-                        shrinkWrap: true,
-                        crossAxisCount: 2,
-                        children: List.generate(productList.length, (index) {
-                          return GestureDetector(
-                              onDoubleTap: () => {doubleTap(index)},
-                              child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 5.0,
-                                        // has the effect of softening the shadow
-                                        spreadRadius: 3.0,
-                                        // has the effect of extending the shadow
-                                        offset: Offset(
-                                          2.0, // horizontal, move right 10
-                                          2.0, // vertical, move down 10
+              productList.length != 0
+                  ? Expanded(
+                      child: iconList == Icons.list
+                          ? GridView.count(
+                              shrinkWrap: true,
+                              crossAxisCount: 2,
+                              children:
+                                  List.generate(productList.length, (index) {
+                                return GestureDetector(
+                                    onDoubleTap: () => {doubleTap(index)},
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black12,
+                                              blurRadius: 5.0,
+                                              // has the effect of softening the shadow
+                                              spreadRadius: 3.0,
+                                              // has the effect of extending the shadow
+                                              offset: Offset(
+                                                2.0, // horizontal, move right 10
+                                                2.0, // vertical, move down 10
+                                              ),
+                                            ),
+                                          ],
+                                          border:
+                                              Border.all(color: Colors.white),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(4)),
                                         ),
-                                      ),
-                                    ],
-                                    border: Border.all(color: Colors.white),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(4)),
-                                  ),
-                                  margin:
-                                      EdgeInsets.fromLTRB(7.0, 5.0, 7.0, 8.0),
-                                  child: CarouselSlider.builder(
-                                      enlargeCenterPage: true,
-                                      aspectRatio: 3 / 2,
-                                      viewportFraction: 1.0,
-                                      itemCount: 2,
-                                      itemBuilder: (BuildContext context,
-                                              int itemIndex) =>
-                                          itemIndex == 0
-                                              ? GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        new MaterialPageRoute(
-                                                          builder: (_) =>
-                                                              ProductDetail(
-                                                            title:
-                                                                "Product Detail page",
-                                                                productDetail: productList[index],
-                                                          ),
-                                                        ));
-                                                  },
-                                                  child: Container(
-                                                    child: Image.network(
-                                                      productList[index].thumbnail,
-                                                      width: 180,
-                                                      height: 180,
-                                                    ),
-                                                  ),
-                                                )
-                                              : GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        new MaterialPageRoute(
-                                                          builder: (_) =>
-                                                              ProductDetail(
-                                                            title:
-                                                                "Product Detail page",
-                                                          ),
-                                                        ));
-                                                  },
-                                                  child: Container(
-                                                    margin: EdgeInsets.fromLTRB(
-                                                        0.0, 20.0, 0.0, 0.0),
-                                                    child: Column(
-                                                      children: <Widget>[
-                                                        Text(
-                                                          productList[index].product,
-                                                          style: TextStyle(
-                                                              fontSize: 17),
-                                                        ),
-                                                        Text(
-                                                          "Rs. " + productList[index].price,
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500),
-                                                        ),
-                                                        Container(
-                                                          padding: EdgeInsets
-                                                              .fromLTRB(10.0,
-                                                                  .0, 0.0, 0.0),
-                                                          margin: EdgeInsets
-                                                              .fromLTRB(
-                                                                  20.0,
-                                                                  20.0,
-                                                                  25.0,
-                                                                  0.0),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                                color: Colors
-                                                                    .blue),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            8)),
-                                                          ),
-                                                          child: Row(
-                                                            children: <Widget>[
-                                                              Icon(
-                                                                Icons
-                                                                    .call,
-                                                                color: Colors
-                                                                    .blue,
+                                        margin: EdgeInsets.fromLTRB(
+                                            7.0, 5.0, 7.0, 8.0),
+                                        child: CarouselSlider.builder(
+                                            enlargeCenterPage: true,
+                                            aspectRatio: 3 / 2,
+                                            viewportFraction: 1.0,
+                                            itemCount: 2,
+                                            itemBuilder:
+                                                (BuildContext context,
+                                                        int itemIndex) =>
+                                                    itemIndex == 0
+                                                        ? GestureDetector(
+                                                            onTap: () {
+                                                              Navigator.push(
+                                                                  context,
+                                                                  new MaterialPageRoute(
+                                                                    builder: (_) =>
+                                                                        ProductDetail(
+                                                                      title:
+                                                                          "Product Detail page",
+                                                                      productDetail:
+                                                                          productList[
+                                                                              index],
+                                                                    ),
+                                                                  ));
+                                                            },
+                                                            child: Container(
+                                                              child:
+                                                                  Image.network(
+                                                                productList[
+                                                                        index]
+                                                                    .thumbnail,
+                                                                width: 180,
+                                                                height: 180,
                                                               ),
-                                                              Container(
-                                                                  margin: EdgeInsets
-                                                                      .fromLTRB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  child:
-                                                                      FlatButton(
-                                                                    onPressed:
-                                                                        () {
+                                                            ),
+                                                          )
+                                                        : GestureDetector(
+                                                            onTap: () {
+                                                              Navigator.push(
+                                                                  context,
+                                                                  new MaterialPageRoute(
+                                                                    builder: (_) =>
+                                                                        ProductDetail(
+                                                                      title:
+                                                                          "Product Detail page",
+                                                                          productDetail: productList[index],
+                                                                    ),
+                                                                  ));
+                                                            },
+                                                            child: Container(
+                                                              margin: EdgeInsets
+                                                                  .fromLTRB(
+                                                                      0.0,
+                                                                      20.0,
+                                                                      0.0,
+                                                                      0.0),
+                                                              child: Column(
+                                                                children: <
+                                                                    Widget>[
+                                                                  Text(
+                                                                    productList[
+                                                                            index]
+                                                                        .product,
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            17),
+                                                                  ),
+                                                                  Text(
+                                                                    "Rs. " +
+                                                                        productList[index]
+                                                                            .price,
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            20,
+                                                                        fontWeight:
+                                                                            FontWeight.w500),
+                                                                  ),
+                                                                  Container(
+                                                                    padding: EdgeInsets
+                                                                        .fromLTRB(
+                                                                            10.0,
+                                                                            .0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                    margin: EdgeInsets
+                                                                        .fromLTRB(
+                                                                            20.0,
+                                                                            20.0,
+                                                                            25.0,
+                                                                            0.0),
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      border: Border.all(
+                                                                          color:
+                                                                              Colors.blue),
+                                                                      borderRadius:
+                                                                          BorderRadius.all(
+                                                                              Radius.circular(8)),
+                                                                    ),
+                                                                    child: Row(
+                                                                      children: <
+                                                                          Widget>[
+                                                                        Icon(
+                                                                          Icons
+                                                                              .call,
+                                                                          color:
+                                                                              Colors.blue,
+                                                                        ),
+                                                                        Container(
+                                                                            margin: EdgeInsets.fromLTRB(
+                                                                                0.0,
+                                                                                0.0,
+                                                                                0.0,
+                                                                                0.0),
+                                                                            child:
+                                                                                FlatButton(
+                                                                              onPressed: () {
 //                                                                      cart.add(productList[index]);
 //                                                                      sendDataToCart(productList[index]);
 //                                                                        print(checkDuplication().length);
-
-                                                                          launch("tel:"+ productList[index].owner_number);
-
-                                                                        },
-                                                                    child: Text(
-                                                                      "Call him",
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              15.0,
-                                                                          color: Colors
-                                                                              .black,
-                                                                          fontWeight:
-                                                                              FontWeight.w300),
+                                                                                callCount(index);
+                                                                                launch("tel:" + productList[index].owner_number);
+                                                                              },
+                                                                              child: Text(
+                                                                                "Call him",
+                                                                                style: TextStyle(fontSize: 15.0, color: Colors.black, fontWeight: FontWeight.w300),
+                                                                              ),
+                                                                            ))
+                                                                      ],
                                                                     ),
-                                                                  ))
-                                                            ],
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ))));
-                        }))
-                    : ListView.builder(
-                        itemCount: productList.length,
-                        itemBuilder: (context, i) {
-                          return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 5.0,
-                                    // has the effect of softening the shadow
-                                    spreadRadius: 3.0,
-                                    // has the effect of extending the shadow
-                                    offset: Offset(
-                                      2.0, // horizontal, move right 10
-                                      2.0, // vertical, move down 10
-                                    ),
-                                  ),
-                                ],
-                                border: Border.all(color: Colors.white),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                              ),
-                              margin: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 8.0),
-                              padding: EdgeInsets.fromLTRB(20.0, 8.0, 5.0, 8.0),
-                              child: GestureDetector(
-                                onDoubleTap: () {
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                        builder: (_) => ProductDetail(
-                                          title: "Product Detail page",
-                                          productDetail: productList[i],
-                                        ),
-                                      ));
-                                },
-                                child: ExpansionTile(
-                                  title: Row(
-                                    children: <Widget>[
-                                      Image.network(productList[i].thumbnail, width: 40, height: 40,),
-                                      Container(
-                                        width: 190.0,
-                                        margin: EdgeInsets.fromLTRB(
-                                            30.0, 0.0, 0.0, 0.0),
-                                        child: Text(
-                                          productList[i].product,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  children: <Widget>[
-                                    Container(
-                                      decoration: BoxDecoration(),
-                                      margin: EdgeInsets.fromLTRB(
-                                          30.0, 0.0, 0.0, 0.0),
-                                      child: ListTile(
-                                        title: Text(
-                                          "Rs. " + productList[i].price,
-                                          style: TextStyle(fontSize: 23),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                        child: Row(
-                                      children: <Widget>[
-                                        Container(
-                                          padding: EdgeInsets.fromLTRB(
-                                              15.0, 0.0, 0.0, 0.0),
-                                          margin: EdgeInsets.fromLTRB(
-                                              35.0, 0.0, 0.0, 20.0),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: Colors.blue),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(8)),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ))));
+                              }))
+                          : ListView.builder(
+                              itemCount: productList.length,
+                              itemBuilder: (context, i) {
+                                return Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 5.0,
+                                          // has the effect of softening the shadow
+                                          spreadRadius: 3.0,
+                                          // has the effect of extending the shadow
+                                          offset: Offset(
+                                            2.0, // horizontal, move right 10
+                                            2.0, // vertical, move down 10
                                           ),
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.call,
-                                                color: Colors.blue,
+                                        ),
+                                      ],
+                                      border: Border.all(color: Colors.white),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8)),
+                                    ),
+                                    margin: EdgeInsets.fromLTRB(
+                                        20.0, 3.0, 20.0, 8.0),
+                                    padding: EdgeInsets.fromLTRB(
+                                        20.0, 8.0, 5.0, 8.0),
+                                    child: GestureDetector(
+                                      onDoubleTap: () {
+                                        Navigator.push(
+                                            context,
+                                            new MaterialPageRoute(
+                                              builder: (_) => ProductDetail(
+                                                title: "Product Detail page",
+                                                productDetail: productList[i],
                                               ),
+                                            ));
+                                      },
+                                      child: ExpansionTile(
+                                        title: Row(
+                                          children: <Widget>[
+                                            Image.network(
+                                              productList[i].thumbnail,
+                                              width: 40,
+                                              height: 40,
+                                            ),
+                                            Container(
+                                              width: 190.0,
+                                              margin: EdgeInsets.fromLTRB(
+                                                  30.0, 0.0, 0.0, 0.0),
+                                              child: Text(
+                                                productList[i].product,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                        children: <Widget>[
+                                          Container(
+                                            decoration: BoxDecoration(),
+                                            margin: EdgeInsets.fromLTRB(
+                                                30.0, 0.0, 0.0, 0.0),
+                                            child: ListTile(
+                                              title: Text(
+                                                "Rs. " + productList[i].price,
+                                                style: TextStyle(fontSize: 23),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                              child: Row(
+                                            children: <Widget>[
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
-                                                      0.0, 0.0, 10.0, 0.0),
-                                                  child: FlatButton(
-                                                    onPressed: (){
+                                                padding: EdgeInsets.fromLTRB(
+                                                    15.0, 0.0, 0.0, 0.0),
+                                                margin: EdgeInsets.fromLTRB(
+                                                    35.0, 0.0, 0.0, 20.0),
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: Colors.blue),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(8)),
+                                                ),
+                                                child: Row(
+                                                  children: <Widget>[
+                                                    Icon(
+                                                      Icons.call,
+                                                      color: Colors.blue,
+                                                    ),
+                                                    Container(
+                                                        margin:
+                                                            EdgeInsets.fromLTRB(
+                                                                0.0,
+                                                                0.0,
+                                                                10.0,
+                                                                0.0),
+                                                        child: FlatButton(
+                                                          onPressed: () {
 //                                                      cart.add(productList[i]);
 //                                                      print(checkDuplication());
 //                                                      sendDataToCart(productList[i]);
-                                                      launch("tel:"+ productList[i].owner_number);
-                                                    },
-                                                    child: Text(
-                                                      "Call him",
-                                                      style: TextStyle(
-                                                          fontSize: 17.0,
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.w300),
-                                                    ),
-                                                  ))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    )),
-                                  ],
-                                ),
-                              ));
-                        },
-                      ),
-              ):Center(
+                                                            callCount(i);
 
-                child: Container(
-                  margin: EdgeInsets.fromLTRB(0.0, MediaQuery.of(context).size.height/3, 0.0, 0.0),
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
-                        child: Icon(FontAwesomeIcons.sadTear, size: 50,color: Colors.red,),
+                                                          },
+                                                          child: Text(
+                                                            "Call him",
+                                                            style: TextStyle(
+                                                                fontSize: 17.0,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w300),
+                                                          ),
+                                                        ))
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          )),
+                                        ],
+                                      ),
+                                    ));
+                              },
+                            ),
+                    )
+                  : Center(
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(0.0,
+                            MediaQuery.of(context).size.height / 3, 0.0, 0.0),
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                              child: Icon(
+                                FontAwesomeIcons.sadTear,
+                                size: 50,
+                                color: Colors.red,
+                              ),
+                            ),
+                            Text("No item Available yet!",
+                                style: TextStyle(color: Colors.black))
+                          ],
+                        ),
                       ),
-                  Text("No item Available yet!", style: TextStyle(
-                      color: Colors.black
-                  ))
-                    ],
-                  ),
-                ),
-              )
+                    )
             ],
           ),
         ),
@@ -582,10 +616,12 @@ class _HomeState extends State<Home> {
       listGrid++;
     }
   }
-  List<Product> checkDuplication(){
+
+  List<Product> checkDuplication() {
     cart = cart.toSet().toList();
     return cart;
   }
+
   Drawer returnDrawer() {
     return Drawer(
         child: Container(
@@ -637,7 +673,7 @@ class _HomeState extends State<Home> {
               },
             ),
           ),
-         /* Container(
+          /* Container(
             color: Colors.white,
             child: ListTile(
               title: Text('Compose new product'),
@@ -682,31 +718,32 @@ class _HomeState extends State<Home> {
 //                Navigator.pop(context);
               },
             ),
-          ),email == "dukaan@gmail.com" ?
-          Container(
-            color: Colors.white,
-            child: ListTile(
-              title: Text('All Product'),
-              trailing: Icon(
-                Icons.bookmark_border,
-                color: Colors.red,
-              ),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (_) =>
-                          AllProduct(
-                            title: "All Products",
-                          ),
-                    ));
+          ),
+          email == "dukaan@gmail.com"
+              ? Container(
+                  color: Colors.white,
+                  child: ListTile(
+                    title: Text('All Product'),
+                    trailing: Icon(
+                      Icons.bookmark_border,
+                      color: Colors.red,
+                    ),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.push(
+                          context,
+                          new MaterialPageRoute(
+                            builder: (_) => AllProduct(
+                              title: "All Products",
+                            ),
+                          ));
 //                Navigator.pop(context);
-              },
-            ),
-          ):Container(),
+                    },
+                  ),
+                )
+              : Container(),
           /*Container(
             color: Colors.white,
             child: ListTile(
@@ -753,27 +790,24 @@ class _HomeState extends State<Home> {
 //                Navigator.pop(context);
               },
             ),
+          ),Container(
+            color: Colors.white,
+            child: ListTile(
+              title: Text('Liked Products'),
+              trailing: Icon(
+                FontAwesomeIcons.heart,
+                color: Colors.red,
+              ),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                      builder: (_) => LikedProduct(),
+                    ));
+//                Navigator.pop(context);
+              },
+            ),
           ),
-//          Container(
-//            color: Colors.white,
-//            child: ListTile(
-//              title: Text('Cart'),
-//              trailing: Icon(
-//                Icons.shopping_cart,
-//                color: Colors.red,
-//              ),
-//              onTap: () {
-//                Navigator.push(
-//                    context,
-//                    new MaterialPageRoute(
-//                      builder: (_) => Cart(
-//                        title: "Cart page",
-//                      ),
-//                    ));
-////                Navigator.pop(context);
-//              },
-//            ),
-//          ),
           Container(
             color: Colors.white,
             child: ListTile(
@@ -815,26 +849,37 @@ class _HomeState extends State<Home> {
     // here you write the codes to input the data into firestore
   }
 
-  void searchProducts(String text){
-    if(text == ""){
+  void searchProducts(String text) {
+    if (text == "") {
       readDataFromFireStore();
       return;
     }
     List<Product> searchList = new List();
     productList = prevList;
 
-    for(int i = 0 ; i < productList.length ; i++){
+    for (int i = 0; i < productList.length; i++) {
       print(productList[i].product);
-      if(productList[i].product.toLowerCase().contains(text.toLowerCase()) ||
+      if (productList[i].product.toLowerCase().contains(text.toLowerCase()) ||
           productList[i].price.toLowerCase().contains(text.toLowerCase()) ||
-          productList[i].product_id.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i]
+              .product_id
+              .toLowerCase()
+              .contains(text.toLowerCase()) ||
           productList[i].province.toLowerCase().contains(text.toLowerCase()) ||
           productList[i].city.toLowerCase().contains(text.toLowerCase()) ||
-          productList[i].prduct_category.toLowerCase().contains(text.toLowerCase()) ||
-          productList[i].short_desc.toLowerCase().contains(text.toLowerCase()) ||
+          productList[i]
+              .prduct_category
+              .toLowerCase()
+              .contains(text.toLowerCase()) ||
+          productList[i]
+              .short_desc
+              .toLowerCase()
+              .contains(text.toLowerCase()) ||
           productList[i].long_desc.toLowerCase().contains(text.toLowerCase()) ||
-          productList[i].is_negotiable.toLowerCase().contains(text.toLowerCase())
-      ){
+          productList[i]
+              .is_negotiable
+              .toLowerCase()
+              .contains(text.toLowerCase())) {
         searchList.add(productList[i]);
         print(searchList);
       }
@@ -844,13 +889,15 @@ class _HomeState extends State<Home> {
     });
   }
 
-
-
-  void readDataFromFireStore () {
-    if(widget.filter.toLowerCase() == "all"){
+  void readDataFromFireStore() {
+    if (widget.filter.toLowerCase() == "all") {
       List<Product> isFeaturedList = new List();
       List<Product> isNotFeaturedList = new List();
-      db.collection("products").where("is_feature", isEqualTo: false).getDocuments().then((QuerySnapshot snapshot) {
+      db
+          .collection("products")
+          .where("is_feature", isEqualTo: false)
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
         snapshot.documents.forEach((f) {
           setState(() {
             isNotFeaturedList.add(Product(
@@ -872,7 +919,11 @@ class _HomeState extends State<Home> {
                 f.data["current_date"],
                 f.data["expire_date"],
                 f.data["is_feature"],
-                f.data["quantity"]
+                f.data["quantity"],
+                f.data['call_count'],
+                f.data['views_count'],
+                f.data["uid"],
+                f.data["likes_count"]
 
             ));
           });
@@ -880,19 +931,22 @@ class _HomeState extends State<Home> {
         });
 
         setState(() {
-          isFeaturedList.sort((a, b){
+          isFeaturedList.sort((a, b) {
             return b.current_date.compareTo(a.current_date);
           });
           productList = isFeaturedList + isNotFeaturedList;
           prevList = productList;
           print(productList.length);
         });
-        for(int i = 0; i< productList.length; i++){
-          print(productList[i].current_date.millisecondsSinceEpoch.toString()  + productList[i].is_feature.toString() + productList[i].product_id);
-        }
+        setLikesTrue();
       });
 
-      db.collection("products").where("is_feature", isEqualTo: true).getDocuments().then((QuerySnapshot snapshot) {
+
+      db
+          .collection("products")
+          .where("is_feature", isEqualTo: true)
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
         snapshot.documents.forEach((f) {
 //        setState(() {
           isFeaturedList.add(Product(
@@ -914,15 +968,18 @@ class _HomeState extends State<Home> {
               f.data["current_date"],
               f.data["expire_date"],
               f.data["is_feature"],
-              f.data["quantity"]
-
+              f.data["quantity"],
+              f.data['call_count'],
+              f.data['views_count'],
+              f.data["uid"],
+              f.data["likes_count"]
           ));
 //        });
           print("sixe: " + productList.length.toString());
         });
 
         setState(() {
-          isNotFeaturedList.sort((a, b){
+          isNotFeaturedList.sort((a, b) {
             return b.current_date.compareTo(a.current_date);
           });
           productList = isFeaturedList + isNotFeaturedList;
@@ -930,17 +987,21 @@ class _HomeState extends State<Home> {
 
           print(productList.length);
         });
-        for(int i = 0; i< productList.length; i++){
-          print(productList[i].current_date.millisecondsSinceEpoch.toString()  + productList[i].is_feature.toString());
+        for (int i = 0; i < productList.length; i++) {
+          print(productList[i].current_date.millisecondsSinceEpoch.toString() +
+              productList[i].is_feature.toString());
         }
+        setLikesTrue();
 
       });
-
-    }else if(widget.filter == uid){
-
+    } else if (widget.filter == uid) {
       List<Product> isFeaturedList = new List();
       List<Product> isNotFeaturedList = new List();
-      db.collection("products").where("uid", isEqualTo: widget.filter).getDocuments().then((QuerySnapshot snapshot) {
+      db
+          .collection("products")
+          .where("uid", isEqualTo: widget.filter)
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
         snapshot.documents.forEach((f) {
           setState(() {
             isNotFeaturedList.add(Product(
@@ -962,26 +1023,39 @@ class _HomeState extends State<Home> {
                 f.data["current_date"],
                 f.data["expire_date"],
                 f.data["is_feature"],
-                f.data["quantity"]
+                f.data["quantity"],
+                f.data['call_count'],
+                f.data['views_count'],
+                f.data["uid"],
+                f.data["likes_count"],
 
             ));
           });
         });
 
         setState(() {
-          isFeaturedList.sort((a, b){
-            return b.current_date.millisecondsSinceEpoch.compareTo(a.current_date.millisecondsSinceEpoch);
+          isFeaturedList.sort((a, b) {
+            return b.current_date.millisecondsSinceEpoch
+                .compareTo(a.current_date.millisecondsSinceEpoch);
           });
           productList = isFeaturedList + isNotFeaturedList;
           prevList = productList;
           print(productList.length);
         });
+        setLikesTrue();
       });
-    } else{
+    } else {
       List<Product> isFeaturedList = new List();
       List<Product> isNotFeaturedList = new List();
-      db.collection("products").where("prduct_category", isEqualTo: widget.filter).getDocuments().then((QuerySnapshot snapshot) {
+      db
+          .collection("products")
+          .where("prduct_category", isEqualTo: widget.filter)
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
         snapshot.documents.forEach((f) {
+          print(
+            f.data['call_count'],
+          );
           setState(() {
             isNotFeaturedList.add(Product(
                 f.data["owner"],
@@ -1002,32 +1076,31 @@ class _HomeState extends State<Home> {
                 f.data["current_date"],
                 f.data["expire_date"],
                 f.data["is_feature"],
-                f.data["quantity"]
-
+                f.data["quantity"],
+                f.data['call_count'],
+                f.data['views_count'],
+                f.data["uid"],
+                f.data["likes_count"]
             ));
           });
         });
 
         setState(() {
-          isFeaturedList.sort((a, b){
-            return b.current_date.millisecondsSinceEpoch.compareTo(a.current_date.millisecondsSinceEpoch);
+          isFeaturedList.sort((a, b) {
+            return b.current_date.millisecondsSinceEpoch
+                .compareTo(a.current_date.millisecondsSinceEpoch);
           });
           productList = isFeaturedList + isNotFeaturedList;
           prevList = productList;
           print(productList.length);
+          setLikesTrue();
+
         });
       });
-
     }
-
-
-
   }
 
   Future<void> sendDataToCart(Product cartData) async {
-
-
-
     Map<String, Object> product = new HashMap();
     product['owner'] = cartData.owner;
     product['owner_number'] = cartData.owner_number;
@@ -1049,5 +1122,75 @@ class _HomeState extends State<Home> {
     product['thumbnail'] = cartData.thumbnail;
     product['uid'] = uid;
     db.collection("cart").document(cartData.product_id).setData(product);
+  }
+
+  void callCount(int index) {
+    if (uid != productList[index].uid) {
+      Map map = HashMap<String, Object>();
+      map["call_count"] = ++productList[index].call_count;
+      db
+          .collection("products")
+          .document(productList[index].product_id)
+          .updateData(map);
+      launch("tel:" +
+          productList[index]
+              .owner_number);
+    } else {
+      _drawerKey.currentState.showSnackBar(SnackBar(
+          content: Text('This is your own product')));
+    }
+  }
+
+  void setLikesTrue(){
+    db
+        .collection("likes")
+        .getDocuments()
+        .then((QuerySnapshot snapshot) {
+      snapshot.documents.forEach((f) {
+//        setState(() {
+        likesList.add(Product(
+            f.data["owner"],
+            f.data["owner_number"],
+            f.data["prduct_category"],
+            f.data["product"],
+            f.data["price"],
+            f.data["province"],
+            f.data["shot_desc"],
+            f.data["long_desc"],
+            f.data["is_negotiable"],
+            f.data["image_1"],
+            f.data["image_2"],
+            f.documentID,
+            f.data["thumbnail"],
+            f.data["image_3"],
+            f.data["city"],
+            f.data["current_date"],
+            f.data["expire_date"],
+            f.data["is_feature"],
+            f.data["quantity"],
+            f.data['call_count'],
+            f.data['views_count'],
+            f.data["uid"],
+            f.data["likes_count"]
+        ));
+//        });
+        print("sixe: " + productList.length.toString());
+      });
+
+        for(int j = 0 ; j < productList.length; j++){
+          try{
+          if(likesList[j].product_id == productList[j].product_id){
+            productList[j].is_like = true;
+          }else{
+            productList[j].is_like = false;
+
+          }
+          }catch(e){
+            productList[j].is_like = false;
+
+          }
+        }
+
+    });
   }
 }

@@ -39,7 +39,6 @@ class _AddProductState extends State<AddProductItem>
 
 //  final Controller = TextEditingController();
 
-
   final db = Firestore.instance;
 
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -58,11 +57,11 @@ class _AddProductState extends State<AddProductItem>
   List<File> images = new List();
   int imageIndex;
   AnimationController _controller;
-  int sliderIndex = 0;
   ImagePickerHandler imagePicker;
+  int sliderIndex = 0;
   String printValue = "";
   IconData icon = Icons.camera;
-  String uid ;
+  String uid;
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -73,7 +72,8 @@ class _AddProductState extends State<AddProductItem>
     inputData();
     pr = new ProgressDialog(context);
     pr.style(message: "Adding product ...");
-    pr = new ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
+    pr = new ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
     _controller = new AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -81,12 +81,14 @@ class _AddProductState extends State<AddProductItem>
     imagePicker = new ImagePickerHandler(this, _controller);
     imagePicker.init();
   }
+
   void inputData() async {
     final FirebaseUser user = await auth.currentUser();
     uid = user.uid;
 
     // here you write the codes to input the data into firestore
   }
+
   @override
   Widget build(BuildContext context) {
     list.clear();
@@ -95,7 +97,8 @@ class _AddProductState extends State<AddProductItem>
     images.add(imageProduct);
     images.add(imageProduct);
     list.add(new CategoriesModel("assets/images/pets.png", "Pets"));
-    list.add(new CategoriesModel("assets/images/appliances.png", "Home appliances"));
+    list.add(
+        new CategoriesModel("assets/images/appliances.png", "Home appliances"));
     list.add(new CategoriesModel("assets/images/furniture.png", "Furniture"));
     list.add(new CategoriesModel("assets/images/wardrobe.png", "Wardrobe"));
     list.add(new CategoriesModel(
@@ -111,8 +114,6 @@ class _AddProductState extends State<AddProductItem>
     provice.add("Punjab");
     provice.add("KPK");
 
-
-
     return Stack(
       children: <Widget>[
         Image.asset(
@@ -122,7 +123,7 @@ class _AddProductState extends State<AddProductItem>
           fit: BoxFit.cover,
         ),
         Scaffold(
-          key:  _scaffoldKey,
+          key: _scaffoldKey,
           backgroundColor: Colors.transparent,
           body: _splashBody(),
         ),
@@ -151,7 +152,7 @@ class _AddProductState extends State<AddProductItem>
               Container(
                   width: 150.0,
                   child: Text(
-                    "Login to start ordering your favourite products",
+                    "Add Product to start earning by this app",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black,
@@ -216,8 +217,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: ownerController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the name";
                       }
                       return null;
@@ -238,7 +239,6 @@ class _AddProductState extends State<AddProductItem>
                   ),
                 ),
                 Container(
-
                   margin: EdgeInsets.fromLTRB(30.0, 5.0, 30.0, 10.0),
                   padding: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 3.0),
                   decoration: BoxDecoration(
@@ -247,9 +247,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: ownerMobileNumberController,
-
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the mobile number";
                       }
                       return null;
@@ -285,9 +284,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: productController,
-
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the product name";
                       }
                       return null;
@@ -308,11 +306,9 @@ class _AddProductState extends State<AddProductItem>
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     showCategory();
-
                   },
-
                   child: Container(
                     margin: EdgeInsets.fromLTRB(30.0, 5.0, 30.0, 10.0),
                     padding: EdgeInsets.fromLTRB(20.0, 3.0, 20.0, 3.0),
@@ -320,11 +316,8 @@ class _AddProductState extends State<AddProductItem>
                       border: Border.all(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(4)),
                     ),
-                    child: Text(
-                     category
-
-                    ),
-                ),
+                    child: Text(category),
+                  ),
                 ),
                 Divider()
               ],
@@ -349,8 +342,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: shorDesController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please write the short description";
                       }
                       return null;
@@ -379,9 +372,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: longDesController,
-
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please write the long description";
                       }
                       return null;
@@ -401,7 +393,6 @@ class _AddProductState extends State<AddProductItem>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-
                 Container(
                   margin: EdgeInsets.fromLTRB(35.0, 40.0, 0.0, 10.0),
                   child: Text(
@@ -418,8 +409,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: priceController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the price of product";
                       }
                       return null;
@@ -433,8 +424,6 @@ class _AddProductState extends State<AddProductItem>
                   ),
                 ),
                 Container(
-
-
                   margin: EdgeInsets.fromLTRB(35.0, 15.0, 0.0, 10.0),
                   child: Text(
                     "Is Price negotiable ?",
@@ -450,8 +439,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: isPriceNegotiableController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please write something like yes or no...";
                       }
                       return null;
@@ -463,8 +452,8 @@ class _AddProductState extends State<AddProductItem>
                     decoration:
                         new InputDecoration.collapsed(hintText: 'Yes or No'),
                   ),
-                )
-                ,Container(
+                ),
+                Container(
                   margin: EdgeInsets.fromLTRB(35.0, 40.0, 0.0, 10.0),
                   child: Text(
                     "Quantity",
@@ -480,8 +469,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: quantityController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the Quantity of product";
                       }
                       return null;
@@ -491,7 +480,7 @@ class _AddProductState extends State<AddProductItem>
                       fontSize: 20.0,
                     ),
                     decoration:
-                    new InputDecoration.collapsed(hintText: 'Price'),
+                        new InputDecoration.collapsed(hintText: 'Price'),
                   ),
                 ),
                 Container(
@@ -502,7 +491,7 @@ class _AddProductState extends State<AddProductItem>
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     showDate(context);
                   },
                   child: Container(
@@ -515,7 +504,6 @@ class _AddProductState extends State<AddProductItem>
                     child: Text(dateString),
                   ),
                 ),
-
                 Divider()
               ],
             ),
@@ -531,7 +519,7 @@ class _AddProductState extends State<AddProductItem>
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     showProvince();
                   },
                   child: Container(
@@ -560,8 +548,8 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: TextFormField(
                     controller: cityController,
-                    validator: (text){
-                      if(text.isEmpty){
+                    validator: (text) {
+                      if (text.isEmpty) {
                         return "Please put the city name";
                       }
                       return null;
@@ -571,7 +559,7 @@ class _AddProductState extends State<AddProductItem>
                       fontSize: 20.0,
                     ),
                     decoration:
-                    new InputDecoration.collapsed(hintText: 'Quetta, etc'),
+                        new InputDecoration.collapsed(hintText: 'Quetta, etc'),
                   ),
                 ),
                 Container(
@@ -590,10 +578,10 @@ class _AddProductState extends State<AddProductItem>
                   ),
                   child: Checkbox(
                     value: isFeature,
-                    onChanged: (T){
-                     setState(() {
-                       isFeature = T;
-                     });
+                    onChanged: (T) {
+                      setState(() {
+                        isFeature = T;
+                      });
                     },
                   ),
                 ),
@@ -607,12 +595,11 @@ class _AddProductState extends State<AddProductItem>
                 Container(
                   margin: EdgeInsets.fromLTRB(35.0, 5.0, 0.0, 5.0),
                   child: Text(
-                    "1st Image of product",
+                    "Image of product (1)",
                     style: TextStyle(fontSize: 20.0),
                   ),
                 ),
                 Container(
-                  height: 400,
                   margin: EdgeInsets.fromLTRB(35.0, 5.0, 35.0, 5.0),
                   child: GestureDetector(
                     onTap: () {
@@ -621,50 +608,55 @@ class _AddProductState extends State<AddProductItem>
                     child: new Center(
                       child: images[0] == null
                           ? Container(
-                              color: Colors.blue,
+                              child: Image.asset(
+                                "assets/images/image.jpeg",
+                                width: 200,
+                                height: 200,
+                              ),
                             )
                           : Container(
-                        width: double.infinity,
-                        child: Image.file(images[0]),
-                      ),
+                              width: double.infinity,
+                              child: Image.file(images[0]),
+                            ),
                     ),
                   ),
                 ),
                 Container(
                   margin: EdgeInsets.fromLTRB(35.0, 5.0, 0.0, 5.0),
                   child: Text(
-                    "2nd Image of product",
+                    "Image of product (2)",
                     style: TextStyle(fontSize: 20.0),
                   ),
                 ),
                 Container(
-                  height: 400,
                   margin: EdgeInsets.fromLTRB(35.0, 5.0, 35.0, 5.0),
                   child: GestureDetector(
                     onTap: () {
                       returnFunction(1);
                     },
                     child: new Center(
-                      child: images[1] == null
-                          ? Container(
-                              color: Colors.red,
-                            )
-                          : Container(
-                        width: double.infinity,
-                        child: Image.file(images[1]),
-                      )
-                    ),
+                        child: images[1] == null
+                            ? Container(
+                                child: Image.asset(
+                                  "assets/images/image.jpeg",
+                                  width: 200,
+                                  height: 200,
+                                ),
+                              )
+                            : Container(
+                                width: double.infinity,
+                                child: Image.file(images[1]),
+                              )),
                   ),
                 ),
                 Container(
                   margin: EdgeInsets.fromLTRB(35.0, 0.0, 0.0, 0.0),
                   child: Text(
-                    "3rd Image of product",
+                    "Image of product (3)",
                     style: TextStyle(fontSize: 20.0),
                   ),
                 ),
                 Container(
-                  height: 400,
                   margin: EdgeInsets.fromLTRB(35.0, 0.0, 35.0, 0.0),
                   child: GestureDetector(
                     onTap: () {
@@ -673,7 +665,11 @@ class _AddProductState extends State<AddProductItem>
                     child: new Center(
                       child: images[2] == null
                           ? Container(
-                              color: Colors.indigo,
+                              child: Image.asset(
+                                "assets/images/image.jpeg",
+                                width: 200,
+                                height: 200,
+                              ),
                             )
                           : Container(
                               width: double.infinity,
@@ -713,75 +709,97 @@ class _AddProductState extends State<AddProductItem>
                         ),
                         child: FlatButton(
                             onPressed: () async {
-                              String ownerS, ownerNumerS, productNameS, productCategoryS, quantityS, shortDesS, longDesS, priceS, isNegotiableS, cityS;
-
+                              String ownerS,
+                                  ownerNumerS,
+                                  productNameS,
+                                  productCategoryS,
+                                  quantityS,
+                                  shortDesS,
+                                  longDesS,
+                                  priceS,
+                                  isNegotiableS,
+                                  cityS;
 
                               if (_formKey.currentState.validate()) {
                                 // If the form is valid, display a Snackbar.
-                               if(images[0] != null || images[1] != null || images[2] != null){
-                                 if(province != "Tap me" && category != "Tap me" && dateString != "Tap me"){
-                                   pr.show();
-                                   ownerS = ownerController.text;
-                                   ownerNumerS = ownerMobileNumberController.text;
-                                   productNameS = productController.text;
+                                if (images[0] != null ||
+                                    images[1] != null ||
+                                    images[2] != null) {
+                                  if (province != "Tap me" &&
+                                      category != "Tap me" &&
+                                      dateString != "Tap me") {
+                                    pr.show();
+                                    ownerS = ownerController.text;
+                                    ownerNumerS =
+                                        ownerMobileNumberController.text;
+                                    productNameS = productController.text;
 //                                   productCategoryS = catigoryController.text;
-                                   shortDesS = shorDesController.text;
-                                   longDesS = longDesController.text;
-                                   priceS = priceController.text;
-                                   quantityS = quantityController.text;
-                                   isNegotiableS = isPriceNegotiableController.text;
-                                   cityS = cityController.text;
-                                   Map<String, Object> product = new HashMap();
-                                   product['owner'] = ownerS;
-                                   product['owner_number'] = ownerNumerS;
-                                   product['product'] = productNameS;
-                                   product['prduct_category'] = category;
-                                   product['shot_desc'] = shortDesS;
-                                   product['long_desc'] = longDesS;
-                                   product['price'] = priceS;
-                                   product['quantity'] = quantityS;
-                                   product['is_negotiable'] = isNegotiableS;
-                                   product['city'] = cityS;
-                                   product['province'] = province;
-                                   product['is_feature'] = isFeature;
-                                   product['expire_date'] = dateString;
-                                   product['uid'] = uid;
-                                   product['current_date'] = DateTime.now();
-                                   product['image_1'] = "image";
-                                   product['image_2'] = "image";
-                                   product['image_3'] = "image";
-                                   DocumentReference document = await db.collection("products").add(product);
-                                   print(document.documentID);
-                                   for(int i = 0; i < images.length; i++){
-                                     if(images[i] != null){
-                                     print(_pickSaveImage(images[i],document.documentID, i));
-                                     }
-                                   }
+                                    shortDesS = shorDesController.text;
+                                    longDesS = longDesController.text;
+                                    priceS = priceController.text;
+                                    quantityS = quantityController.text;
+                                    isNegotiableS =
+                                        isPriceNegotiableController.text;
+                                    cityS = cityController.text;
+                                    Map<String, Object> product = new HashMap();
+                                    product['owner'] = ownerS;
+                                    product['owner_number'] = ownerNumerS;
+                                    product['product'] = productNameS;
+                                    product['prduct_category'] = category;
+                                    product['shot_desc'] = shortDesS;
+                                    product['long_desc'] = longDesS;
+                                    product['price'] = priceS;
+                                    product['quantity'] = quantityS;
+                                    product['is_negotiable'] = isNegotiableS;
+                                    product['city'] = cityS;
+                                    product['province'] = province;
+                                    product['is_feature'] = isFeature;
+                                    product['expire_date'] = dateString;
+                                    product['call_count'] = 0;
+                                    product['views_count'] = 0;
+                                    product['likes_count'] = 0;
+                                    product['uid'] = uid;
+                                    product['current_date'] = DateTime.now();
+                                    product['image_1'] = "image";
+                                    product['image_2'] = "image";
+                                    product['image_3'] = "image";
+                                    DocumentReference document = await db
+                                        .collection("products")
+                                        .add(product);
+                                    print(document.documentID);
+                                    for (int i = 0; i < images.length; i++) {
+                                      if (images[i] != null) {
+                                        print(_pickSaveImage(
+                                            images[i], document.documentID, i));
+                                      }
+                                    }
 
-                                   pr.dismiss();
-                                   Navigator.pushAndRemoveUntil(
-                                       context,
-                                       MaterialPageRoute(
-                                         builder: (_) => SuccesfullAddProduct(
-                                           title: "Success page",
-                                           documentId: document.documentID,
-                                           productName: productNameS,
-                                         ),
-                                       ),
-                                           (e) => false);
-                                 }else{
-                                   _scaffoldKey.currentState
-                                       .showSnackBar(SnackBar(content: Text('Please select the check the form again')));
-                                 }
-                               }else{
-                                 _scaffoldKey.currentState
-                                     .showSnackBar(SnackBar(content: Text('Please select the one image atleast of product')));
-                               }
-                              }else{
-                                _scaffoldKey.currentState
-                                    .showSnackBar(SnackBar(content: Text('Please check the form again and fill the field again!')));
+                                    pr.dismiss();
+                                    Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => SuccesfullAddProduct(
+                                            title: "Success page",
+                                            documentId: document.documentID,
+                                            productName: productNameS,
+                                          ),
+                                        ),
+                                        (e) => false);
+                                  } else {
+                                    _scaffoldKey.currentState.showSnackBar(SnackBar(
+                                        content: Text(
+                                            'Please select the check the form again')));
+                                  }
+                                } else {
+                                  _scaffoldKey.currentState.showSnackBar(SnackBar(
+                                      content: Text(
+                                          'Please select the one image atleast of product')));
+                                }
+                              } else {
+                                _scaffoldKey.currentState.showSnackBar(SnackBar(
+                                    content: Text(
+                                        'Please check the form again and fill the field again!')));
                               }
-
 
 //                              Navigator.pushAndRemoveUntil(
 //                                  context,
@@ -1221,9 +1239,13 @@ class _AddProductState extends State<AddProductItem>
   @override
   userImage(File _image) {
     setState(() {
+      print(_image.length());
       print(imageIndex);
       this.images[imageIndex] = _image;
       print(this.images[imageIndex]);
+      print(this.images[imageIndex].length().then((value) {
+        print(value);
+      }));
     });
   }
 
@@ -1264,12 +1286,12 @@ class _AddProductState extends State<AddProductItem>
     );
   }
 
-  void showProvince(){
+  void showProvince() {
     showMaterialDialog<String>(
       context: context,
       child: AlertDialog(
           title: Text("Select the Category"),
-          content:  Container(
+          content: Container(
             margin: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height - 100,
@@ -1277,9 +1299,8 @@ class _AddProductState extends State<AddProductItem>
               itemCount: provice.length,
               itemBuilder: (context, i) {
                 return GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     setState(() {
-
                       province = provice[i];
                       print(province);
                       Navigator.pop(context, 'cancel');
@@ -1323,106 +1344,108 @@ class _AddProductState extends State<AddProductItem>
               },
             ),
           ),
-          actions:null
-      ),
+          actions: null),
     );
   }
 
-  void showCategory(){
+  void showCategory() {
     showMaterialDialog<String>(
       context: context,
       child: AlertDialog(
-        title: Text("Select the Category"),
-        content:  Container(
-          margin: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height - 100,
-          child: ListView.builder(
-            itemCount: list.length,
-            itemBuilder: (context, i) {
-              return GestureDetector(
-                onTap: (){
-                  setState(() {
-
-                    category = list[i].name;
-                    print(category);
-                    Navigator.pop(context, 'cancel');
-                  });
-                },
-                child: Container(
-                  height: 60.0,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 5.0,
-                        // has the effect of softening the shadow
-                        spreadRadius: 3.0,
-                        // has the effect of extending the shadow
-                        offset: Offset(
-                          2.0, // horizontal, move right 10
-                          2.0, // vertical, move down 10
+          title: Text("Select the Category"),
+          content: Container(
+            margin: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height - 100,
+            child: ListView.builder(
+              itemCount: list.length,
+              itemBuilder: (context, i) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      category = list[i].name;
+                      print(category);
+                      Navigator.pop(context, 'cancel');
+                    });
+                  },
+                  child: Container(
+                    height: 60.0,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 5.0,
+                          // has the effect of softening the shadow
+                          spreadRadius: 3.0,
+                          // has the effect of extending the shadow
+                          offset: Offset(
+                            2.0, // horizontal, move right 10
+                            2.0, // vertical, move down 10
+                          ),
                         ),
-                      ),
-                    ],
-                    border: Border.all(color: Colors.white),
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ],
+                      border: Border.all(color: Colors.white),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    margin: EdgeInsets.fromLTRB(5.0, 3.0, 5.0, 8.0),
+                    padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                          child: Text(
+                            list[i].name,
+                            style: TextStyle(fontSize: 16.0),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                  margin: EdgeInsets.fromLTRB(5.0, 3.0, 5.0, 8.0),
-                  padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                  child: Row(
-                    children: <Widget>[
-                      Image.asset(list[i].images),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                        child: Text(
-                          list[i].name,
-                          style: TextStyle(fontSize: 16.0),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-        actions:null
-      ),
+          actions: null),
     );
   }
+
   Future<String> _pickSaveImage(File image, String document, int index) async {
 //    request.auth != null
-    var imageFileName =  DateTime.now().millisecondsSinceEpoch;
-    StorageReference ref =
-    FirebaseStorage.instance.ref().child("products_images").child(imageFileName.toString()+"image.jpg");
+    var imageFileName = DateTime.now().millisecondsSinceEpoch;
+    StorageReference ref = FirebaseStorage.instance
+        .ref()
+        .child("products_images")
+        .child(imageFileName.toString() + "image.jpg");
     StorageUploadTask uploadTask = ref.putFile(image);
     String imge = await (await uploadTask.onComplete).ref.getDownloadURL();
-    if(index == 0 ){
+    if (index == 0) {
       Map<String, Object> imagesMap = new HashMap();
-      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl =
+          await (await uploadTask.onComplete).ref.getDownloadURL();
       imagesMap["image_1"] = imageUrl;
-      imagesMap["thumbnailmm"] = imageUrl;
-      Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
-    }else if(index  == 1){
+      imagesMap["thumbnail"] = imageUrl;
+      Future<void> doc =
+          db.collection("products").document(document).updateData(imagesMap);
+    } else if (index == 1) {
       Map<String, Object> imagesMap = new HashMap();
-      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl =
+          await (await uploadTask.onComplete).ref.getDownloadURL();
       imagesMap["image_2"] = imageUrl;
       imagesMap["thumbnail"] = imageUrl;
-      Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
-
-    }else if(index == 2){
+      Future<void> doc =
+          db.collection("products").document(document).updateData(imagesMap);
+    } else if (index == 2) {
       Map<String, Object> imagesMap = new HashMap();
-      String imageUrl = await (await uploadTask.onComplete).ref.getDownloadURL();
+      String imageUrl =
+          await (await uploadTask.onComplete).ref.getDownloadURL();
       imagesMap["image_3"] = imageUrl;
       imagesMap["thumbnail"] = imageUrl;
-      Future<void> doc = db.collection("products").document(document).updateData(imagesMap);
-
+      Future<void> doc =
+          db.collection("products").document(document).updateData(imagesMap);
     }
-return await (await uploadTask.onComplete).ref.getDownloadURL();
+    return await (await uploadTask.onComplete).ref.getDownloadURL();
   }
-  
 
   Future<Null> showDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(

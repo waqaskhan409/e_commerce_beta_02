@@ -1,28 +1,25 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce_beta/model/productmodel.dart';
-import 'package:e_commerce_beta/ui/addproduct/addproduct.dart';
-import 'package:e_commerce_beta/ui/cart/cart.dart';
 import 'package:e_commerce_beta/ui/categories/categories.dart';
 import 'package:e_commerce_beta/ui/home/home.dart';
 import 'package:e_commerce_beta/ui/login/login.dart';
-import 'package:e_commerce_beta/ui/order/order.dart';
 import 'package:e_commerce_beta/ui/productdetail/productdetail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import 'likedproduct.dart';
+import 'allproduct.dart';
 
-class AllProduct extends StatefulWidget {
-  AllProduct({Key key, this.title}) : super(key: key);
-  String title;
-
+class LikedProduct extends StatefulWidget {
   @override
-  _AllProductsState createState() => _AllProductsState();
+  _LikedProductState createState() => _LikedProductState();
 }
 
-class _AllProductsState extends State<AllProduct> {
+class _LikedProductState extends State<LikedProduct> {
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseStorage storage =
@@ -83,7 +80,7 @@ class _AllProductsState extends State<AllProduct> {
                       Container(
                         margin: EdgeInsets.fromLTRB(20.0, 40.0, 0.0, 0.0),
                         child: Text(
-                          "My Products",
+                          "Liked Products",
                           style: TextStyle(color: Colors.white, fontSize: 18.0),
                         ),
                       ),
@@ -209,27 +206,6 @@ class _AllProductsState extends State<AllProduct> {
                               ],
                             ),
                             children: <Widget>[
-                              productList[i].is_expire == true ? Container(
-                                decoration: BoxDecoration(),
-                                margin: EdgeInsets.fromLTRB(
-                                    30.0, 0.0, 0.0, 0.0),
-                                child: ListTile(
-                                  title: Text(
-                                    "Expired",
-                                    style: TextStyle(fontSize: 23, color: Colors.red),
-                                  ),
-                                ),
-                              ): Container(
-                                decoration: BoxDecoration(),
-                                margin: EdgeInsets.fromLTRB(
-                                    30.0, 0.0, 0.0, 0.0),
-                                child: ListTile(
-                                  title: Text(
-                                    "Not expired yet!",
-                                    style: TextStyle(fontSize: 23, color: Colors.green),
-                                  ),
-                                ),
-                              ),
                               Container(
                                 decoration: BoxDecoration(),
                                 margin: EdgeInsets.fromLTRB(
@@ -250,35 +226,42 @@ class _AllProductsState extends State<AllProduct> {
                                         margin: EdgeInsets.fromLTRB(
                                             35.0, 0.0, 0.0, 20.0),
                                         decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          border:
-                                          Border.all(color: Colors.red),
-                                          borderRadius: BorderRadius.all(
+                                          border: Border.all(
+                                              color: Colors.blue),
+                                          borderRadius:
+                                          BorderRadius.all(
                                               Radius.circular(8)),
                                         ),
                                         child: Row(
                                           children: <Widget>[
                                             Icon(
-                                              Icons.delete,
-                                              color: Colors.white,
+                                              Icons.call,
+                                              color: Colors.blue,
                                             ),
                                             Container(
-                                                margin: EdgeInsets.fromLTRB(
-                                                    0.0, 0.0, 0.0, 0.0),
+                                                margin:
+                                                EdgeInsets.fromLTRB(
+                                                    0.0,
+                                                    0.0,
+                                                    10.0,
+                                                    0.0),
                                                 child: FlatButton(
                                                   onPressed: () {
-//                                                      deleteProduct(
-//                                                          productList[i]);
-//                                                      productList.removeAt(i);
-                                                    showDialogue(productList[i], i);
+//                                                      cart.add(productList[i]);
+//                                                      print(checkDuplication());
+//                                                      sendDataToCart(productList[i]);
+                                                    callCount(i);
+
                                                   },
                                                   child: Text(
-                                                    "Remove from database",
+                                                    "Call him",
                                                     style: TextStyle(
                                                         fontSize: 17.0,
-                                                        color: Colors.white,
+                                                        color: Colors
+                                                            .black,
                                                         fontWeight:
-                                                        FontWeight.w300),
+                                                        FontWeight
+                                                            .w300),
                                                   ),
                                                 ))
                                           ],
@@ -575,42 +558,39 @@ class _AllProductsState extends State<AllProduct> {
   void readDataFromFireStore() {
     print(uid);
 
-    db
-        .collection("products")
-//        .where("uid", isEqualTo: uid)
+    db.collection("likes")
+        .where("liked_uid", isEqualTo: uid)
         .getDocuments()
         .then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((f) {
         setState(() {
           productList.add(Product(
-              f.data["owner"],
-              f.data["owner_number"],
-              f.data["prduct_category"],
-              f.data["product"],
-              f.data["price"],
-              f.data["province"],
-              f.data["shot_desc"],
-              f.data["long_desc"],
-              f.data["is_negotiable"],
-              f.data["image_1"],
-              f.data["image_2"],
-              f.documentID,
-              f.data["thumbnail"],
-              f.data["image_3"],
-              f.data["city"],
-              f.data["current_date"],
-              f.data["expire_date"],
-              f.data["is_feature"],
-              f.data["quantity"],
-              f.data["call_count"],
-              f.data["views_count"],
-              f.data["uid"],
-              f.data["likes_count"],
-
-
+            f.data["owner"],
+            f.data["owner_number"],
+            f.data["prduct_category"],
+            f.data["product"],
+            f.data["price"],
+            f.data["province"],
+            f.data["shot_desc"],
+            f.data["long_desc"],
+            f.data["is_negotiable"],
+            f.data["image_1"],
+            f.data["image_2"],
+            f.documentID,
+            f.data["thumbnail"],
+            f.data["image_3"],
+            f.data["city"],
+            f.data["current_date"],
+            f.data["expire_date"],
+            f.data["is_feature"],
+            f.data["quantity"],
+            f.data["call_count"],
+            f.data["views_count"],
+            f.data["uid"],
+            f.data["likes_count"],
           ));
+          print(f.data["likes_count"]);
         });
-        print("sixe: " + productList.length.toString());
       });
 
       setState(() {
@@ -621,6 +601,7 @@ class _AllProductsState extends State<AllProduct> {
         productList = productList;
       });
       for (int i = 0; i < productList.length; i++) {
+        productList[i].is_like = true;
         DateTime expredDate = DateTime.parse(productList[i].expiry_date);
         if (expredDate.millisecondsSinceEpoch <
             DateTime.now().millisecondsSinceEpoch) {
@@ -630,7 +611,6 @@ class _AllProductsState extends State<AllProduct> {
           productList[i].is_expire = false;
           print("false");
         }
-
         print(productList[i].current_date.toString() +
             productList[i].is_feature.toString() +
             productList[i].product_id);
@@ -643,7 +623,7 @@ class _AllProductsState extends State<AllProduct> {
       child: AlertDialog(
         title: const Text('Attention!'),
         content: Text(
-          'Really want to delete?',
+          'Really want to remove?',
           style: Theme
               .of(context)
               .textTheme
@@ -664,7 +644,7 @@ class _AllProductsState extends State<AllProduct> {
           FlatButton(
             child: const Text('DISCARD'),
             onPressed: () {
-              deleteProduct(product);
+//              deleteProduct(product);
               setState(() {
                 productList.removeAt(index);
               });
@@ -694,7 +674,7 @@ class _AllProductsState extends State<AllProduct> {
     });
   }
 
-  void deleteProduct(Product productList) {
+/*  void deleteProduct(Product productList) {
     String image3Name = "";
     String image2Name = "";
     String image1Name = "";
@@ -729,5 +709,22 @@ class _AllProductsState extends State<AllProduct> {
         .child("products_images/" + imagename)
         .delete()
         .then((value) {});
+  }*/
+
+  void callCount(int index) {
+    if (uid != productList[index].uid) {
+      Map map = HashMap<String, Object>();
+      map["call_count"] = ++productList[index].call_count;
+      db
+          .collection("products")
+          .document(productList[index].product_id)
+          .updateData(map);
+      launch("tel:" +
+          productList[index]
+              .owner_number);
+    } else {
+      _drawerKey.currentState.showSnackBar(SnackBar(
+          content: Text('This is your own product')));
+    }
   }
 }

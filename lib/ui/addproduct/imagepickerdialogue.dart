@@ -71,48 +71,62 @@ class ImagePickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    return new Material(
-        type: MaterialType.transparency,
-        child: new Opacity(
-          opacity: 1.0,
-          child: new Container(
-            padding: EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                new GestureDetector(
-                  onTap: () => _listener.openCamera(),
-                  child: roundedButton(
-                      "Camera",
-                      EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      const Color(0xBBB30000),
-                      const Color(0xFFFFFFFF)),
-                ),
-                new GestureDetector(
-                  onTap: () => _listener.openGallery(),
-                  child: roundedButton(
-                      "Gallery",
-                      EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      const Color(0xBBB30000),
-                      const Color(0xFFFFFFFF)),
-                ),
-                const SizedBox(height: 15.0),
-                new GestureDetector(
-                  onTap: () => dismissDialog(),
-                  child: new Padding(
-                    padding: EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 0.0),
-                    child: roundedButton(
-                        "Cancel",
-                        EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                        const Color(0xBBB30000),
-                        const Color(0xFFFFFFFF)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ));
+    return new Column(
+      children: <Widget>[
+        Spacer(),
+        Container(
+          height: MediaQuery.of(context).size.height/4,
+          child: Material(
+              type: MaterialType.transparency,
+              child: new Opacity(
+                  opacity: 1.0,
+
+                  child: Container(
+                    color: Colors.white,
+                    child: Container(
+                      padding: EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 20.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          new Container(
+                            child: GestureDetector(
+                              onTap: () => _listener.openCamera(),
+                              child: roundedButton(
+                                  "Camera",
+                                  EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                                  const Color(0xBBB30000),
+                                  const Color(0xFFFFFFFF)),
+                            ),
+                          ),
+                          new GestureDetector(
+                            onTap: () => _listener.openGallery(),
+                            child: roundedButton(
+                                "Gallery",
+                                EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                                const Color(0xBBB30000),
+                                const Color(0xFFFFFFFF)),
+                          ),
+//                  const SizedBox(height: 15.0),
+                          new GestureDetector(
+                            onTap: () => dismissDialog(),
+                            child: new Padding(
+                              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                              child: roundedButton(
+                                  "Cancel",
+                                  EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                                  const Color(0xBBB30000),
+                                  const Color(0xFFFFFFFF)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+              )),
+        )
+      ],
+    );
   }
 
   Widget roundedButton(
